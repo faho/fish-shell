@@ -83,7 +83,7 @@ string split -r -m1 / /usr/local/bin/fish
 # /usr/local/bin
 # fish
 
-string split '' abc
+string split "" abc
 # Output:
 # a
 # b
@@ -108,7 +108,7 @@ string trim --right --chars=yz xyzzy zany
 \endfish
 
 \fish
-echo \\x07 | string escape
+echo \\\x07 | string escape
 # Output:
 # \\cg
 \endfish
