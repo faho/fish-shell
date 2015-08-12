@@ -2,7 +2,8 @@
 # Use 'command git' to avoid interactions for aliases from git to (e.g.) hub
 
 function __fish_git_branches
-  command git branch --no-color -a ^/dev/null | sgrep -v ' -> ' | sed -e 's/^..//' -e 's/^remotes\///'
+  #command git branch --no-color -a ^/dev/null | sgrep -v ' -> ' | sed -e 's/^..//' -e 's/^remotes\///'
+  command git branch --no-color -a ^/dev/null | sgrep -v ' -> ' | string replace -r "^.." "" | string replace -r "^remotes/" ""
 end
 
 function __fish_git_tags
@@ -57,7 +58,8 @@ function __fish_git_using_command
     end
 
     # aliased command
-    set -l aliased (command git config --get "alias.$cmd[2]" ^ /dev/null | sed 's/ .*$//')
+    # set -l aliased (command git config --get "alias.$cmd[2]" ^ /dev/null | sed 's/ .*$//')
+    set -l aliased (command git config --get "alias.$cmd[2]" ^ /dev/null | string replace -r ' .*$' '')
     if [ $argv[1] = "$aliased" ]
       return 0
     end
@@ -109,7 +111,8 @@ function __fish_git_custom_commands
     # but it's simpler just to blacklist these names. They're unlikely to change,
     # and the failure mode is we accidentally complete a plumbing command.
     set -l IFS \n
-    for name in (builtin complete -Cgit- | sed 's/^git-\([^[:space:]]*\).*/\1/')
+    # for name in (builtin complete -Cgit- | sed 's/^git-\([^[:space:]]*\).*/\1/')
+	for name in (builtin complete -Cgit- | string replace -a -r "^git-([^[:space:]]*).*" "\${1}")
         switch $name
             case cvsserver receive-pack shell upload-archive upload-pack
                 # skip these
