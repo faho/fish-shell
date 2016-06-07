@@ -9,6 +9,8 @@ function __fish_shared_key_bindings -d "Bindings shared between emacs and vi mod
     bind $argv \cx fish_clipboard_copy
     bind $argv \cv fish_clipboard_paste
 
+    bind $argv \e cancel
+
     bind $argv \t complete
     # shift-tab does a tab complete followed by a search.
     bind $argv --key btab complete-and-search
