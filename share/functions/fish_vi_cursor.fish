@@ -12,6 +12,10 @@ function fish_vi_cursor -d 'Set cursor shape for different vi modes'
     # e.g. tmux started in suckless' st (no support) started in konsole.
     # But since tmux in konsole seems rather common and that case so uncommon,
     # we will just fail there (though it seems that tmux or st swallow it anyway).
+    #
+    # TERM = xterm is special because plenty of things claim to be it, but aren't fully compatible
+    # This includes old vte-terms (without $VTE_VERSION), old xterms (without $XTERM_VERSION or < 280)
+    # and maybe other stuff.
 
     if set -q INSIDE_EMACS
         return
@@ -24,38 +28,31 @@ function fish_vi_cursor -d 'Set cursor shape for different vi modes'
         return
     end
 
-    # We use the `tput` here just to see if terminfo thinks we can change the cursor.
-    # We cannot use that sequence directly as it's not the correct one for konsole and iTerm,
-    # and because we may want to change the cursor even though terminfo says we can't (tmux).
-    if not tput Ss >/dev/null ^/dev/null
-        # Whitelist tmux...
-        and not begin
-            set -q TMUX
-            # ...in a supporting term...
+    # We don't use `tput Ss` here because there's nothing to be gained from it.
+    # The sequence is a tmux extension that isn't included in e.g. macOS xterm definition (iTerm),
+    # and we need another condition anyway.
+    if not begin
+            # (xterm or tmux) and (konsole or iterm or vte or new-xterm)
+            begin
+                begin # tmux
+                    set -q TMUX
+                    and string match -qr '^screen.*|^tmux.*' -- $TERM
+                end
+                or string match -q 'xterm*' -- $TERM
+            end
             and begin set -q KONSOLE_PROFILE_NAME
                 or set -q ITERM_PROFILE
-                or set -q VTE_VERSION # which version is already checked above
-                or test (string replace -r "XTerm\((\d+)\)" '$1' -- $XTERM_VERSION) -ge 280
+                or set -q VTE_VERSION # no need to check which, we've done that before
+                or begin
+                    set -l xterm_version (string replace -r "XTerm\((\d+)\)" '$1' -- $XTERM_VERSION)
+                    and test "$xterm_version" -ge 280 ^/dev/null
+                end
             end
-            # .. unless an unsupporting terminal has been started in tmux inside a supporting one
-            and begin string match -q "screen*" -- $TERM
-                or string match -q "tmux*" -- $TERM
-            end
-        end
-        and not string match -q "konsole*" -- $TERM
-        or begin
-            # TERM = xterm is special because plenty of things claim to be it, but aren't fully compatible
-            # This includes old vte-terms (without $VTE_VERSION), old xterms (without $XTERM_VERSION or < 280)
-            # and maybe other stuff.
-            # This needs to be kept _at least_ as long as Ubuntu 14.04 is still a thing
-            # because that ships a gnome-terminal without support and without $VTE_VERSION.
-            string match -q 'xterm*' -- $TERM
-            and not begin set -q KONSOLE_PROFILE_NAME
-                or set -q ITERM_PROFILE
-                or set -q VTE_VERSION # which version is already checked above
-                # If $XTERM_VERSION is undefined, this will return 1 and print an error. Silence it.
-                or test (string replace -r "XTerm\((\d+)\)" '$1' -- $XTERM_VERSION) -ge 280 ^/dev/null
-            end
+            # Other supporting terms via $TERM
+            # This can't be included because unsupporting st versions are still in the wild
+            # or begin
+            #     string match -qr 'st*' -- $TERM
+            # end
         end
 
         return
