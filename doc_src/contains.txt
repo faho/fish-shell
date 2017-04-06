@@ -11,7 +11,8 @@ contains [OPTIONS] KEY [VALUES...]
 
 The following options are available:
 
-- `-i` or `--index` print the word index
+- `-i` or `--index` print the first index the word appears at
+- `-I` or `--index-all` print all indices the word appears at
 
 Note that, like GNU tools, `contains` interprets all arguments starting with a `-` as options to contains, until it reaches an argument that is `--` (two dashes). See the examples below.
 
@@ -36,3 +37,11 @@ end
 \endfish
 
 The above code checks for `-q` in the argument list, using the `--` argument to demarcate options to `contains` from the key to search for.
+
+\fish
+if set -l ind (contains -I -- /bin $PATH)
+    set -e PATH[$ind]
+end
+\endfish
+
+will remove all appearances of "/bin" from $PATH.

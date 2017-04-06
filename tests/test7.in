@@ -28,6 +28,16 @@ contains -i -- string a b c string d
 contains -i -- -- a b c; or echo nothing
 contains -i -- -- a b c -- v
 
+# Test `contains -I` together with `set -e`
+begin
+    set -l foo a b c a b c
+    if set -l ind (contains -I -- a $foo)
+        echo $ind
+        set -e foo[$ind]
+    end
+    echo $foo
+end
+
 # Test if, else, and else if
 if true
 	echo alpha1.1
