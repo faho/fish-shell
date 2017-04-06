@@ -2779,17 +2779,22 @@ static int builtin_count(parser_t &parser, io_streams_t &streams, wchar_t **argv
 static int builtin_contains(parser_t &parser, io_streams_t &streams, wchar_t **argv) {
     wgetopter_t w;
     int argc;
+    int ret = 1;
     argc = builtin_count_args(argv);
     wchar_t *needle;
     bool should_output_index = false;
+    bool should_output_all = false;
 
     const struct woption long_options[] = {
-        {L"help", no_argument, 0, 'h'}, {L"index", no_argument, 0, 'i'}, {0, 0, 0, 0}};
+        {L"help", no_argument, 0, 'h'},
+        {L"index", no_argument, 0, 'i'},
+        {L"index-all", no_argument, 0, 'I'},
+        {0, 0, 0, 0}};
 
     while (1) {
         int opt_index = 0;
 
-        int opt = w.wgetopt_long(argc, argv, L"+hi", long_options, &opt_index);
+        int opt = w.wgetopt_long(argc, argv, L"+hiI", long_options, &opt_index);
         if (opt == -1) break;
 
         switch (opt) {
@@ -2818,6 +2823,11 @@ static int builtin_contains(parser_t &parser, io_streams_t &streams, wchar_t **a
                 should_output_index = true;
                 break;
             }
+            case 'I': {
+                should_output_index = true;
+                should_output_all = true;
+                break;
+            }
             default: {
                 DIE("unexpected opt");
                 break;
@@ -2831,12 +2841,13 @@ static int builtin_contains(parser_t &parser, io_streams_t &streams, wchar_t **a
     } else {
         for (int i = w.woptind + 1; i < argc; i++) {
             if (!wcscmp(needle, argv[i])) {
+                ret = 0;
                 if (should_output_index) streams.out.append_format(L"%d\n", i - w.woptind);
-                return 0;
+                if (!should_output_all) break;
             }
         }
     }
-    return 1;
+    return ret;
 }
 
 /// The  . (dot) builtin, sometimes called source. Evaluates the contents of a file.
