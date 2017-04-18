@@ -49,7 +49,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #include "path.h"
 #include "proc.h"
 #include "reader.h"
-#include "signal.h"
+#include "fish_signal.h"
 #include "wutil.h"  // IWYU pragma: keep
 
 // PATH_MAX may not exist.

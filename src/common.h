@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "fallback.h"  // IWYU pragma: keep
-#include "signal.h"    // IWYU pragma: keep
+#include "fish_signal.h"    // IWYU pragma: keep
 
 // Define a symbol we can use elsewhere in our code to determine if we're being built on MS Windows
 // under Cygwin.

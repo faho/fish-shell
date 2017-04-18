@@ -61,7 +61,7 @@
 #include "proc.h"
 #include "reader.h"
 #include "screen.h"
-#include "signal.h"
+#include "fish_signal.h"
 #include "tokenizer.h"
 #include "utf8.h"
 #include "wcstringutil.h"

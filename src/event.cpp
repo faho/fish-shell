@@ -18,7 +18,7 @@
 #include "io.h"
 #include "parser.h"
 #include "proc.h"
-#include "signal.h"
+#include "fish_signal.h"
 #include "wutil.h"  // IWYU pragma: keep
 
 /// Number of signals that can be queued before an overflow occurs.

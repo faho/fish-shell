@@ -67,7 +67,7 @@
 #include "path.h"
 #include "proc.h"
 #include "reader.h"
-#include "signal.h"
+#include "fish_signal.h"
 #include "tokenizer.h"
 #include "wcstringutil.h"
 #include "wgetopt.h"

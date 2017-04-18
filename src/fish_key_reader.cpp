@@ -31,7 +31,7 @@
 #include "print_help.h"
 #include "proc.h"
 #include "reader.h"
-#include "signal.h"
+#include "fish_signal.h"
 #include "wutil.h"  // IWYU pragma: keep
 
 struct config_paths_t determine_config_directory_paths(const char *argv0);

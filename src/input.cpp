@@ -26,7 +26,7 @@
 #include "parser.h"
 #include "proc.h"
 #include "reader.h"
-#include "signal.h"  // IWYU pragma: keep
+#include "fish_signal.h"  // IWYU pragma: keep
 #include "wutil.h"   // IWYU pragma: keep
 
 #define MAX_INPUT_FUNCTION_ARGS 20

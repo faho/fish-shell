@@ -38,7 +38,7 @@
 #include "parse_tree.h"
 #include "path.h"
 #include "reader.h"
-#include "signal.h"
+#include "fish_signal.h"
 #include "wutil.h"  // IWYU pragma: keep
 
 // Our history format is intended to be valid YAML. Here it is:

@@ -36,7 +36,7 @@
 #include "postfork.h"
 #include "proc.h"
 #include "reader.h"
-#include "signal.h"
+#include "fish_signal.h"
 #include "wutil.h"  // IWYU pragma: keep
 
 /// File descriptor redirection error message.

@@ -69,7 +69,7 @@
 #include "reader.h"
 #include "sanity.h"
 #include "screen.h"
-#include "signal.h"
+#include "fish_signal.h"
 #include "tokenizer.h"
 #include "util.h"
 #include "wutil.h"  // IWYU pragma: keep
