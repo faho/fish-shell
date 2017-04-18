@@ -6,7 +6,7 @@
 #mesondefine DOCDIR
 #mesondefine SYSCONFDIR
 #mesondefine PREFIX
-#define LOCALEDIR DATADIR "/locale"
+#mesondefine LOCALEDIR
 #define FISH_BUILD_VERSION 7
 
 /* Define to 1 if you have the `backtrace_symbols' function. */
