@@ -5,10 +5,9 @@ gettextdep = dependency('gettext', required: false)
 ncursesdep = dependency('ncurses')
 threaddep = dependency('threads')
 rtdep = cpp.find_library('rt', required: true)
-# stdcppdep = cpp.find_library('libstdc++', required: true)
 # pcre2dep = dependency('pcre2')
-pcre2dep = cpp.find_library('pcre2-32', required: true)
-# signaldep = cpp.find_library('csignal', required: true)
+pcre2dep = dependency('libpcre2-32')
+# pcre2dep = cpp.find_library('pcre2-32', required: true)
 
 conf = configuration_data()
 global_warn_flags = []
@@ -109,14 +108,23 @@ dirs = [ 'bindir', 'datadir', 'docdir', 'sysconfdir' ]
 foreach d : dirs
       conf.set_quoted(d.to_upper(), get_option(d))
 endforeach
+conf.set_quoted('LOCALEDIR', join_paths(get_option('datadir'),
+                                        'locale'))
+conf.set_quoted('PREFIX', get_option('prefix'))
 
 configure_file(input : 'meson_config.h',
                output : 'config.h',
                configuration : conf)
 
-inc = include_directories('src')
-executable('fish', 'src/fish.cpp', 
+inc = include_directories('src/')
+deps = [ncursesdep, rtdep, threaddep, gettextdep, pcre2dep]
+filelist = files('src/autoload.cpp','src/builtin.cpp','src/builtin_commandline.cpp','src/builtin_complete.cpp','src/builtin_jobs.cpp','src/builtin_printf.cpp','src/builtin_set.cpp','src/builtin_set_color.cpp','src/builtin_string.cpp','src/builtin_test.cpp','src/builtin_ulimit.cpp','src/color.cpp','src/common.cpp','src/complete.cpp','src/env.cpp','src/env_universal_common.cpp','src/event.cpp','src/exec.cpp','src/expand.cpp','src/fallback.cpp','src/fish_signal.cpp','src/fish_version.cpp','src/function.cpp','src/highlight.cpp','src/history.cpp','src/input.cpp','src/input_common.cpp','src/intern.cpp','src/io.cpp','src/iothread.cpp','src/kill.cpp','src/output.cpp','src/pager.cpp','src/parse_execution.cpp','src/parse_productions.cpp','src/parse_tree.cpp','src/parse_util.cpp','src/parser.cpp','src/parser_keywords.cpp','src/path.cpp','src/postfork.cpp','src/print_help.cpp','src/proc.cpp','src/reader.cpp','src/sanity.cpp','src/screen.cpp','src/tokenizer.cpp','src/utf8.cpp','src/util.cpp','src/wcstringutil.cpp','src/wgetopt.cpp','src/wildcard.cpp','src/wutil.cpp')
+executable('fish', 'src/fish.cpp', filelist,
                    include_directories : inc,
-                   dependencies : [ncursesdep, rtdep, threaddep, gettextdep, pcre2dep]) #, pcre2dep, signaldep])
-# executable('fish_key_reader', 'src/fish_key_reader.cpp')
-# executable('fish_indent', 'src/fish_indent.cpp')
+                   dependencies : deps)
+executable('fish_key_reader', 'src/fish_key_reader.cpp', filelist,
+                              include_directories : inc,
+                              dependencies : deps)
+executable('fish_indent', 'src/fish_indent.cpp', filelist,
+                          include_directories : inc,
+                          dependencies : deps)

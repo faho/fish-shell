@@ -4,9 +4,7 @@
 // the only change is different `git describe` version.
 #include "fish_version.h"
 
-#ifndef FISH_BUILD_VERSION
-#include "fish-build-version.h"
-#endif
+#define FISH_BUILD_VERSION "7"
 
 /// Return fish shell version.
 const char *get_fish_version() { return FISH_BUILD_VERSION; }
