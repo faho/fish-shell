@@ -9,6 +9,7 @@ rtdep = cpp.find_library('rt', required: true)
 pcre2dep = dependency('libpcre2-32')
 deps = [ncursesdep, rtdep, threaddep, gettextdep, pcre2dep]
 
+subdir('po')
 global_warn_flags = []
 global_warn_flag_opts = [ '-Wall', '-Wextra', '-Wno-missing-field-initializers' ]
 foreach f : global_warn_flag_opts if cpp.has_argument(f)
@@ -28,44 +29,19 @@ conf = configuration_data()
 headers = ['curses', 'ncurses', 'dirent', 'execinfo', 'getopt',
            'inttypes', 'libintl', 'memory', 'ndir', 'siginfo',
            'spawn', 'stdint', 'stdlib', 'strings', 'string',
-           'stropts', 'termios', 'term', 'unistd'
+           'stropts', 'termios', 'term', 'unistd',
+           'ncurses/curses', 'ncurses/term',
+           'sys/ioctl', 'sys/resource', 'sys/ndir',
+           'sys/select', 'sys/stat', 'sys/sysctl',
+           'sys/types' # , 'sys/dir'
           ]
 foreach h : headers
-        if cpp.has_header(h + '.h')
-           conf.set('HAVE_' + h.to_upper() + '_H', 1)
-        endif
+  if cpp.has_header(h + '.h')
+    # "underscorify" replaces all chars other than `a-zA-Z0-9` with `_`,
+    # so "ncurses/curses.h" ends up as "NCURSES_CURSES_H".
+    conf.set('HAVE_' + h.underscorify().to_upper() + '_H', 1)
+  endif
 endforeach
-
-if cpp.has_header('ncurses/curses.h')
-   conf.set('HAVE_NCURSES_CURSES_H', 1)
-endif
-if cpp.has_header('ncurses/term.h')
-   conf.set('HAVE_NCURSES_TERM_H', 1)
-endif
-# if cpp.has_header('sys/dir.h')
-#    conf.set('HAVE_SYS_DIR_H', 1)
-# endif
-if cpp.has_header('sys/ioctl.h')
-   conf.set('HAVE_SYS_IOCTL_H', 1)
-endif
-if cpp.has_header('sys/resource.h')
-   conf.set('HAVE_SYS_RESOURCE_H', 1)
-endif
-if cpp.has_header('sys/ndir.h')
-   conf.set('HAVE_SYS_NDIR_H', 1)
-endif
-if cpp.has_header('sys/select.h')
-   conf.set('HAVE_SYS_SELECT_H', 1)
-endif
-if cpp.has_header('sys/stat.h')
-   conf.set('HAVE_SYS_STAT_H', 1)
-endif
-if cpp.has_header('sys/sysctl.h')
-   conf.set('HAVE_SYS_SYSCTL_H', 1)
-endif
-if cpp.has_header('sys/types.h')
-   conf.set('HAVE_SYS_TYPES_H', 1)
-endif
 
 functions = [ 'backtrace_symbols', 'clock_gettime', 'dirfd',
               'flock', 'futimens', 'futimes', 'getifaddrs',
@@ -81,8 +57,13 @@ endforeach
 
 # TODO: Unconditionally setting this to true
 conf.set('HAVE_CXX11', 1)
-conf.set('HAVE_STRUCT_DIRENT_D_TYPE', 1)
-conf.set('HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC', 1)
+# TODO: Needs include
+if cpp.has_member('struct dirent', 'd_type')
+  conf.set('HAVE_STRUCT_DIRENT_D_TYPE', 1)
+endif
+if cpp.has_member('struct stat', 'st_mtim_tv_nsec')
+  conf.set('HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC', 1)
+endif
 conf.set('HAVE_SYS_ERRLIST', 1)
 conf.set('HAVE_WINSIZE', 1)
 conf.set('HAVE__NL_MSG_CAT_CNTR', 1)
@@ -93,11 +74,18 @@ conf.set('SIZEOF_WCHAR_T', cpp.sizeof('wchar_t'))
 conf.set('STDC_HEADERS', 1)
 conf.set('WCHAR_T_BITS', 32)
 conf.set_quoted('PACKAGE_BUGREPORT', 'fish-users@lists.sourceforge.net')
-conf.set_quoted('PACKAGE_STRING', 'fish 2.5.0-254-g09e9472b')
-conf.set_quoted('PACKAGE_TARNAME', 'fish')
 conf.set_quoted('PACKAGE_URL', '')
-conf.set_quoted('PACKAGE_VERSION', '2.5.0-254-g09e9472b')
-conf.set_quoted('PACKAGE_NAME', 'fish')
+package_name = 'fish'
+conf.set_quoted('PACKAGE_TARNAME', package_name)
+conf.set_quoted('PACKAGE_NAME', package_name)
+# TODO: This regenerates the file FISH-BUILD-VERSION-FILE
+# c = run_command('build_tools/git_version_gen.sh')
+vcs_tag(input: 'FISH-BUILD-VERSION-FILE',
+        output: 'FISH-BUILD-VERSION-FILE',
+        fallback: 'version')
+package_version = '7' # c.stdout()
+conf.set_quoted('PACKAGE_VERSION', package_version)
+conf.set_quoted('PACKAGE_STRING', package_name + package_version)
 
 if gettextdep.found()
     conf.set('USE_GETTEXT', 1)
@@ -145,11 +133,14 @@ filelist = files('src/autoload.cpp', 'src/builtin.cpp',
                  'src/wildcard.cpp','src/wutil.cpp')
 
 executable('fish', 'src/fish.cpp', filelist,
-                   include_directories : inc,
-                   dependencies : deps)
+           include_directories : inc,
+           dependencies : deps,
+           install : true)
 executable('fish_key_reader', 'src/fish_key_reader.cpp', filelist,
                               include_directories : inc,
-                              dependencies : deps)
+                              dependencies : deps,
+                              install : true)
 executable('fish_indent', 'src/fish_indent.cpp', filelist,
                           include_directories : inc,
-                          dependencies : deps)
+                          dependencies : deps,
+                          install : true)
