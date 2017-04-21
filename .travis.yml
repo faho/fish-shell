@@ -13,6 +13,30 @@ matrix:
             - expect
             - gettext
             - libncurses5-dev
+    # Build using meson
+    # Unfortunately, meson requires ninja 1.6,
+    # which is only available in ubuntu yakkety (16.10),
+    # but travis only offers trusty (14.04).
+    # - os: linux
+    #   compiler: gcc
+    #   addons:
+    #     apt:
+    #       packages:
+    #         - bc
+    #         - expect
+    #         - gettext
+    #         - libncurses5-dev
+    #         - ninja
+    #         - python-dev
+    #         - python3-pip
+    #   install:
+    #     - pip3 install --upgrade pip
+    #     - pip3 install meson
+    #   script:
+    #     - mkdir build
+    #     - meson build
+    #     - cd build
+    #     - ninja
     - os: linux
       compiler: gcc
       addons:
