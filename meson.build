@@ -6,7 +6,7 @@ gettextdep = dependency('gettext', required: false)
 ncursesdep = dependency('ncurses')
 threaddep = dependency('threads')
 rtdep = cpp.find_library('rt', required: true)
-pcre2dep = dependency('libpcre2-32')
+pcre2dep = dependency('libpcre2-32', required: false)
 deps = [ncursesdep, rtdep, threaddep, gettextdep, pcre2dep]
 
 subdir('po')
