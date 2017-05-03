@@ -1,4 +1,13 @@
-project('fish', 'cpp', version : '2.6.0', default_options : ['cpp_std=c++11'])
+project('fish', 'cpp',
+        version : '2.6.0',
+        license : 'GPLv2',
+        default_options : [
+          'cpp_std=c++11',
+          'prefix=/usr/local',
+          'sysconfdir=/etc',
+          'localstatedir=/var',
+          'datadir=share',
+        ])
 
 cpp = meson.get_compiler('cpp')
 
@@ -9,7 +18,6 @@ rtdep = cpp.find_library('rt', required: true)
 pcre2dep = dependency('libpcre2-32', required: false)
 deps = [ncursesdep, rtdep, threaddep, gettextdep, pcre2dep]
 
-subdir('po')
 global_warn_flags = []
 global_warn_flag_opts = [ '-Wall', '-Wextra', '-Wno-missing-field-initializers' ]
 foreach f : global_warn_flag_opts if cpp.has_argument(f)
@@ -75,17 +83,18 @@ conf.set('STDC_HEADERS', 1)
 conf.set('WCHAR_T_BITS', 32)
 conf.set_quoted('PACKAGE_BUGREPORT', 'fish-users@lists.sourceforge.net')
 conf.set_quoted('PACKAGE_URL', '')
-package_name = 'fish'
-conf.set_quoted('PACKAGE_TARNAME', package_name)
-conf.set_quoted('PACKAGE_NAME', package_name)
+conf.set_quoted('PACKAGE_TARNAME', meson.project_name())
+conf.set_quoted('PACKAGE_NAME', meson.project_name())
 # TODO: This regenerates the file FISH-BUILD-VERSION-FILE
 # c = run_command('build_tools/git_version_gen.sh')
-vcs_tag(input: 'FISH-BUILD-VERSION-FILE',
-        output: 'FISH-BUILD-VERSION-FILE',
-        fallback: 'version')
-package_version = '7' # c.stdout()
+# TODO: How do we read the version from that file?
+# without that, it seems utterly useless.
+# vcs_tag(input: 'FISH-BUILD-VERSION-FILE',
+#         output: 'FISH-BUILD-VERSION-FILE',
+#         fallback: 'version')
+package_version = meson.project_version()
+conf.set_quoted('PACKAGE_STRING', meson.project_version() + package_version)
 conf.set_quoted('PACKAGE_VERSION', package_version)
-conf.set_quoted('PACKAGE_STRING', package_name + package_version)
 
 if gettextdep.found()
     conf.set('USE_GETTEXT', 1)
@@ -93,9 +102,17 @@ endif
 
 # TODO: Figure out the directory settings
 # "localedir" and "prefix" are pre-defined for meson.
-dirs = [ 'bindir', 'datadir', 'docdir', 'sysconfdir', 'localedir', 'prefix' ]
-foreach d : dirs
-      conf.set_quoted(d.to_upper(), get_option(d))
+absolute_dirs = [ 'sysconfdir', 'prefix' ]
+relative_dirs = [ 'bindir', 'datadir', 'docdir', 'localedir' ]
+foreach d : absolute_dirs
+  set_variable(d, get_option(d))
+  conf.set_quoted(d.to_upper(), get_option(d))
+endforeach
+# TODO: This craps out if the path starts with a "/".
+foreach d : relative_dirs
+  val = join_paths(get_option('prefix'), get_option(d))
+  set_variable(d, val)
+  conf.set_quoted(d.to_upper(), val)
 endforeach
 
 configure_file(input : 'meson_config.h',
@@ -132,15 +149,27 @@ filelist = files('src/autoload.cpp', 'src/builtin.cpp',
                  'src/wcstringutil.cpp','src/wgetopt.cpp',
                  'src/wildcard.cpp','src/wutil.cpp')
 
-executable('fish', 'src/fish.cpp', filelist,
-           include_directories : inc,
-           dependencies : deps,
-           install : true)
-executable('fish_key_reader', 'src/fish_key_reader.cpp', filelist,
-                              include_directories : inc,
-                              dependencies : deps,
-                              install : true)
-executable('fish_indent', 'src/fish_indent.cpp', filelist,
-                          include_directories : inc,
-                          dependencies : deps,
-                          install : true)
+fish = executable('fish', 'src/fish.cpp', filelist,
+                  include_directories : inc,
+                  dependencies : deps,
+                  install : true)
+fish_key_reader = executable('fish_key_reader', 'src/fish_key_reader.cpp', filelist,
+                             include_directories : inc,
+                             dependencies : deps,
+                             install : true)
+fish_indent = executable('fish_indent', 'src/fish_indent.cpp', filelist,
+                         include_directories : inc,
+                         dependencies : deps,
+                         install : true)
+
+subdir('po')
+# TODO: We add the "/fish" automatically in other places.
+install_subdir('share/functions',
+               install_dir : join_paths(datadir, 'fish'))
+install_subdir('share/completions',
+               install_dir : join_paths(datadir, 'fish'))
+install_subdir('share/tools',
+               install_dir : join_paths(datadir, 'fish'))
+install_data('share/config.fish',
+             'share/__fish_build_paths.fish',
+             install_dir : join_paths(datadir, 'fish'))

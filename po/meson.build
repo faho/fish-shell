@@ -10,4 +10,4 @@ langs = [
   'sv', 
   'zh_CN'
 ]
-i18n.gettext('fish', languages : langs)
+# i18n.gettext('fish', languages : langs)

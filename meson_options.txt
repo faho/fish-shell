@@ -1,5 +1,6 @@
 option('gettext', type: 'combo', choices : ['auto', 'yes', 'no'], value: 'auto')
 option('doxygen', type: 'combo', choices : ['auto', 'yes', 'no'], value: 'auto')
 option('included-pcre2', type: 'combo', choices : ['yes', 'no'], value: 'yes')
-option('docdir', type: 'string', value: '/doc/fish')
+# Note: This needs to not start with a "/", otherwise shit blows up.
+option('docdir', type: 'string', value: 'doc/fish')
 # TODO: Moar options
