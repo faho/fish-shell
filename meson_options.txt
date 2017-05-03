@@ -3,4 +3,7 @@ option('doxygen', type: 'combo', choices : ['auto', 'yes', 'no'], value: 'auto')
 option('included-pcre2', type: 'combo', choices : ['yes', 'no'], value: 'yes')
 # Note: This needs to not start with a "/", otherwise shit blows up.
 option('docdir', type: 'string', value: 'doc/fish')
+option('extra_completionsdir', type: 'string', value: 'vendor_completions.d')
+option('extra_functionsdir', type: 'string', value: 'vendor_functions.d')
+option('extra_confdir', type: 'string', value: 'vendor_conf.d')
 # TODO: Moar options

@@ -170,6 +170,9 @@ install_subdir('share/completions',
                install_dir : join_paths(datadir, 'fish'))
 install_subdir('share/tools',
                install_dir : join_paths(datadir, 'fish'))
+configure_file(input : 'share/__fish_build_paths.fish.in',
+               output : '__fish_build_paths.fish',
+               configuration : conf)
 install_data('share/config.fish',
-             'share/__fish_build_paths.fish',
+             join_paths(meson.current_build_dir(), '__fish_build_paths.fish'),
              install_dir : join_paths(datadir, 'fish'))
