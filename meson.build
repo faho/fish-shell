@@ -1,3 +1,12 @@
+# TODO:
+# Some kinds of files aren't built.
+# - man pages
+# - /etc/fish
+# - docs
+# - extra*dirs
+# - localization
+# - pkg-config files
+# For stubs, see the other "TODO" markers.
 project('fish', 'cpp',
         version : '2.6.0',
         license : 'GPLv2',
@@ -11,6 +20,10 @@ project('fish', 'cpp',
 
 cpp = meson.get_compiler('cpp')
 
+if not cpp.has_argument('-std=c++11')
+  error('Your compiler lacks C++11 support, so fish cannot be compiled')
+endif
+
 gettextdep = dependency('gettext', required: false)
 ncursesdep = dependency('ncurses')
 threaddep = dependency('threads')
@@ -18,6 +31,7 @@ rtdep = cpp.find_library('rt', required: true)
 pcre2dep = dependency('libpcre2-32', required: false)
 deps = [ncursesdep, rtdep, threaddep, gettextdep, pcre2dep]
 
+# TODO: These don't match the autotools build. More warnings are enabled.
 global_warn_flags = []
 global_warn_flag_opts = [ '-Wall', '-Wextra', '-Wno-missing-field-initializers' ]
 foreach f : global_warn_flag_opts if cpp.has_argument(f)
@@ -63,7 +77,7 @@ foreach f : functions
         endif
 endforeach
 
-# TODO: Unconditionally setting this to true
+# This is tested above, we don't support building without it.
 conf.set('HAVE_CXX11', 1)
 # TODO: Needs include
 if cpp.has_member('struct dirent', 'd_type')
@@ -100,7 +114,7 @@ if gettextdep.found()
     conf.set('USE_GETTEXT', 1)
 endif
 
-# TODO: Figure out the directory settings
+# TODO: Figure out the directory settings - this is likely to be wrong somehow.
 # "localedir" and "prefix" are pre-defined for meson.
 absolute_dirs = [ 'sysconfdir', 'prefix' ]
 relative_dirs = [ 'bindir', 'datadir', 'docdir', 'localedir' ]
@@ -162,6 +176,7 @@ fish_indent = executable('fish_indent', 'src/fish_indent.cpp', filelist,
                          dependencies : deps,
                          install : true)
 
+# STUB: This doesn't work.
 subdir('po')
 # TODO: We add the "/fish" automatically in other places.
 install_subdir('share/functions',
