@@ -103,12 +103,10 @@ conf.set_quoted('PACKAGE_NAME', meson.project_name())
 # c = run_command('build_tools/git_version_gen.sh')
 # TODO: How do we read the version from that file?
 # without that, it seems utterly useless.
-# vcs_tag(input: 'FISH-BUILD-VERSION-FILE',
-#         output: 'FISH-BUILD-VERSION-FILE',
-#         fallback: 'version')
-package_version = meson.project_version()
-conf.set_quoted('PACKAGE_STRING', meson.project_version() + package_version)
-conf.set_quoted('PACKAGE_VERSION', package_version)
+vcs_tag(input: 'FISH-BUILD-VERSION-FILE.in',
+        output: 'FISH-BUILD-VERSION-FILE',
+        fallback: meson.project_version())
+conf.set_quoted('PACKAGE_STRING', meson.project_name() + meson.project_version())
 
 if gettextdep.found()
     conf.set('USE_GETTEXT', 1)
