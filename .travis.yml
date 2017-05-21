@@ -42,14 +42,16 @@ matrix:
             - expect
             - gettext
             - libncurses5-dev
-    - os: osx
-      osx_image: xcode8
-      before_install:
-        - brew update
-        - brew install pcre2 # use system PCRE2
-        - brew outdated xctool || brew upgrade xctool # for xcode... soon.
-      env:
-        - CXXFLAGS="-g -lstdc++"
+    # HACK: Travis does not have enough resources for osx, so the build often fails.
+    # This should be retested periodically.
+    # - os: osx
+    #   osx_image: xcode8
+    #   before_install:
+    #     - brew update
+    #     - brew install pcre2 # use system PCRE2
+    #     - brew outdated xctool || brew upgrade xctool # for xcode... soon.
+    #   env:
+    #     - CXXFLAGS="-g -lstdc++"
   fast_finish: true
 
 script:
