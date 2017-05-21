@@ -3,6 +3,10 @@ dist: trusty
 sudo: required
 
 matrix:
+  allow_failures:
+    # HACK: Travis does not have enough resources for osx, so the build often fails.
+    # This should be retested periodically.
+  - os: osx
   include:
     - os: linux
       compiler: gcc
