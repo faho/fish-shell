@@ -782,6 +782,7 @@ complete -c git -n '__fish_git_needs_command' -a reset -d 'Reset current HEAD to
 complete -f -c git -n '__fish_git_using_command reset' -l hard -d 'Reset files in working directory'
 complete -c git -n '__fish_git_using_command reset' -a '(__fish_git_branches)' -d 'Branch'
 complete -f -c git -n '__fish_git_using_command reset' -a '(__fish_git_staged_files)' -d 'File'
+complete -f -c git -n '__fish_git_using_command reset' -a '(__fish_git_modified_files)' -d 'File'
 complete -f -c git -n '__fish_git_using_command reset' -a '(__fish_git_reflog)' -d 'Reflog'
 # TODO options
 
