@@ -1447,9 +1447,13 @@ void complete(const wcstring &cmd_with_subcmds, std::vector<completion_t> *out_c
                             std::unique_ptr<builtin_commandline_scoped_transient_t> transient_cmd;
                             if (i == 0) {
                                 assert(wrap_chain.at(i) == current_command_unescape);
-                            } else if (!(flags & COMPLETION_REQUEST_AUTOSUGGESTION)) {
-                                wcstring faux_cmdline = cmd;
-                                faux_cmdline.replace(cmd_node->source_start,
+                            }
+                            if (!(flags & COMPLETION_REQUEST_AUTOSUGGESTION)) {
+                                // We need to remove everything before the command so `commandline` calls in scripted
+                                // completions work (e.g. without any `and` or `not`).
+                                wcstring faux_cmdline = cmd.substr(cmd_node->source_start, std::string::npos);
+                                // Now replace the actual command with whatever it wraps.
+                                faux_cmdline.replace(0,
                                                      cmd_node->source_length, wrap_chain.at(i));
                                 transient_cmd = make_unique<builtin_commandline_scoped_transient_t>(
                                     faux_cmdline);
