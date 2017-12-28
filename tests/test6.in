@@ -133,3 +133,9 @@ begin
   
   rm -rf $parened_path
 end
+
+# Test that the commandline is correctly faked with all decorations removed.
+complete -c bananana -fa '(commandline)'
+# The "and", "not" and "exec" are decorations. The real command is "bananana".
+# The trailing space will be printed along with it.
+complete -C"and not exec bananana lama lama ding dong "
