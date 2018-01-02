@@ -1071,7 +1071,7 @@ wcstring escape_string(const wcstring &in, escape_flags_t flags, escape_string_s
             break;
         }
         case STRING_STYLE_URL: {
-            DIE("STRING_STYLE_URL not implemented");
+            escape_string_url(in.c_str(), result);
             break;
         }
         case STRING_STYLE_VAR: {
