@@ -123,6 +123,12 @@ class arg_iterator_t {
         }
         return string_get_arg_argv(&argidx_, argv_);
     }
+
+    // Return a reference to the backing storage so callers
+    // get a wcstring to handle embedded NULs.
+    const wcstring& getstorage() {
+        return storage_;
+    }
 };
 }
 
@@ -482,7 +488,8 @@ static int string_escape_script(options_t &opts, int optind, wchar_t **argv,
 
     arg_iterator_t aiter(argv, optind, streams);
     while (const wchar_t *arg = aiter.next()) {
-        streams.out.append(escape_string(arg, flags, STRING_STYLE_SCRIPT));
+        // Use the wcstring here because of embedded NULs.
+        streams.out.append(escape_string(aiter.getstorage(), flags, STRING_STYLE_SCRIPT));
         streams.out.append(L'\n');
         nesc++;
     }
