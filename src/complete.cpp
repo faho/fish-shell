@@ -649,7 +649,8 @@ static wcstring complete_function_desc(const wcstring &fn) {
     wcstring result;
     bool has_description = function_get_desc(fn, &result);
     if (!has_description) {
-        function_get_definition(fn, &result);
+        iothread_perform_on_main([&]() { function_load(fn); });
+        function_get_desc(fn, &result);
     }
     return result;
 }
@@ -661,8 +662,6 @@ static wcstring complete_function_desc(const wcstring &fn) {
 void completer_t::complete_cmd(const wcstring &str_cmd, bool use_function, bool use_builtin,
                                bool use_command, bool use_implicit_cd) {
     if (str_cmd.empty()) return;
-
-    std::vector<completion_t> possible_comp;
 
     if (use_command) {
         expand_error_t result = expand_string(str_cmd, &this->completions,
@@ -686,16 +685,23 @@ void completer_t::complete_cmd(const wcstring &str_cmd, bool use_function, bool 
     if (str_cmd.find(L'/') == wcstring::npos && str_cmd.at(0) != L'~') {
         if (use_function) {
             wcstring_list_t names = function_get_names(str_cmd.at(0) == L'_');
-            for (size_t i = 0; i < names.size(); i++) {
-                append_completion(&possible_comp, names.at(i));
+            for (auto& name: names) {
+                if (str_cmd.size() > name.size()) {
+                    continue;
+                }
+                auto res = std::mismatch(str_cmd.begin(), str_cmd.end(), name.begin());
+                if (res.first == str_cmd.end()) {
+                    auto desc = complete_function_desc(name);
+                    // Since we don't replace the token, we need to take the substring without it.
+                    auto afterstr = name.substr(str_cmd.size());
+                    append_completion(&this->completions, afterstr, desc, 0);
+                }
             }
-
-            this->complete_strings(str_cmd, 0, &complete_function_desc, possible_comp, 0);
         }
 
-        possible_comp.clear();
-
         if (use_builtin) {
+            std::vector<completion_t> possible_comp;
+
             builtin_get_names(&possible_comp);
             this->complete_strings(str_cmd, 0, &builtin_get_desc, possible_comp, 0);
         }
