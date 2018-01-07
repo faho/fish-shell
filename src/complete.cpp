@@ -587,6 +587,10 @@ void completer_t::complete_cmd_desc(const wcstring &str) {
     for (size_t i = 0; i < this->completions.size(); i++) {
         const completion_t &c = this->completions.at(i);
 
+        // Hack: This crashes for some reason.
+        if (c.flags & COMPLETE_REPLACES_TOKEN) {
+            continue;
+        }
         if (c.completion.empty() || (c.completion[c.completion.size() - 1] != L'/')) {
             skip = 0;
             break;
@@ -668,9 +672,9 @@ void completer_t::complete_cmd(const wcstring &str_cmd, bool use_function, bool 
                                               EXPAND_SPECIAL_FOR_COMMAND | EXPAND_FOR_COMPLETIONS |
                                                   EXECUTABLES_ONLY | this->expand_flags(),
                                               NULL);
-        // if (result != EXPAND_ERROR && this->wants_descriptions()) {
-        //     this->complete_cmd_desc(str_cmd);
-        // }
+        if (result != EXPAND_ERROR && this->wants_descriptions()) {
+            this->complete_cmd_desc(str_cmd);
+        }
     }
 
     if (use_implicit_cd) {
