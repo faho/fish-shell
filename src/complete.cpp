@@ -668,9 +668,9 @@ void completer_t::complete_cmd(const wcstring &str_cmd, bool use_function, bool 
                                               EXPAND_SPECIAL_FOR_COMMAND | EXPAND_FOR_COMPLETIONS |
                                                   EXECUTABLES_ONLY | this->expand_flags(),
                                               NULL);
-        if (result != EXPAND_ERROR && this->wants_descriptions()) {
-            this->complete_cmd_desc(str_cmd);
-        }
+        // if (result != EXPAND_ERROR && this->wants_descriptions()) {
+        //     this->complete_cmd_desc(str_cmd);
+        // }
     }
 
     if (use_implicit_cd) {
@@ -684,18 +684,25 @@ void completer_t::complete_cmd(const wcstring &str_cmd, bool use_function, bool 
 
     if (str_cmd.find(L'/') == wcstring::npos && str_cmd.at(0) != L'~') {
         if (use_function) {
-            wcstring_list_t names = function_get_names(str_cmd.at(0) == L'_');
+            bool use_hidden = str_cmd.at(0) == L'_';
+            wcstring_list_t names = function_get_names(use_hidden);
             for (auto& name: names) {
-                if (str_cmd.size() > name.size()) {
-                    continue;
+                if (name.empty()) continue;
+                string_fuzzy_match_t match =
+                    string_fuzzy_match_string(str_cmd, name, this->max_fuzzy_match_type());
+                if (match.type == fuzzy_match_none) continue;
+                wcstring comp;
+                int flags = 0;
+                if (!match_type_requires_full_replacement(match.type)) {
+                    // Take only the suffix.
+                    assert(name.length() >= str_cmd.length());
+                    comp = name.substr(str_cmd.length());
+                } else {
+                    comp = name;
+                    flags = COMPLETE_REPLACES_TOKEN | COMPLETE_DONT_ESCAPE;
                 }
-                auto res = std::mismatch(str_cmd.begin(), str_cmd.end(), name.begin());
-                if (res.first == str_cmd.end()) {
-                    auto desc = complete_function_desc(name);
-                    // Since we don't replace the token, we need to take the substring without it.
-                    auto afterstr = name.substr(str_cmd.size());
-                    append_completion(&this->completions, afterstr, desc, 0);
-                }
+                auto desc = complete_function_desc(name);
+                append_completion(&this->completions, comp, desc, flags, match);
             }
         }
 
