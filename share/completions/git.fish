@@ -101,7 +101,7 @@ function __fish_git_files
         # The entire line is the "from" from a rename.
         if set -q use_next[1]
             contains -- $use_next $argv
-            and echo "$line"
+            and string replace -- "$PWD/" "" "$root/$line" | string replace "$root/" ":/"
             set -e use_next[1]
             continue
         end
