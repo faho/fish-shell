@@ -618,6 +618,7 @@ static int process_clean_after_marking(bool allow_interactive) {
                 found = 1;
             }
             // Fire the exit-event for every external process in the group.
+            // Non-external "processes" don't count because their/fish's process still exists.
             for (auto& proc : j->processes) {
                 if (proc->type == EXTERNAL) {
                     proc_fire_event(L"JOB_EXIT", EVENT_EXIT, proc->pid, 0);
