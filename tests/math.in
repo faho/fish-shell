@@ -31,3 +31,8 @@ not math 'sin()'
 not math '2 + 2 4'
 not math
 not math -s 12
+
+logmsg Validate non-finite number handling
+math nan + 1
+math 1 / 0
+math inf + 1

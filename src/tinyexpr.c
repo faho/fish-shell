@@ -97,6 +97,7 @@ void te_free(te_expr *n) {
 }
 
 
+static double inf() { return INFINITY;}
 static double pi() {return 3.14159265358979323846;}
 static double e() {return 2.71828182845904523536;}
 static double fac(double a) {/* simplest version of fac */
@@ -143,9 +144,11 @@ static const te_variable functions[] = {
     {"exp", exp,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"fac", fac,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"floor", floor,  TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"inf", inf,      TE_FUNCTION0 | TE_FLAG_PURE, 0},
     {"ln", log,       TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"log", log10,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"log10", log10,  TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"nan", nan,      TE_FUNCTION0 | TE_FLAG_PURE, 0},
     {"ncr", ncr,      TE_FUNCTION2 | TE_FLAG_PURE, 0},
     {"npr", npr,      TE_FUNCTION2 | TE_FLAG_PURE, 0},
     {"pi", pi,        TE_FUNCTION0 | TE_FLAG_PURE, 0},

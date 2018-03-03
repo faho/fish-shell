@@ -25,3 +25,9 @@
 
 ####################
 # Validate math error reporting
+
+####################
+# Validate non-finite number handling
+nan
+inf
+inf
