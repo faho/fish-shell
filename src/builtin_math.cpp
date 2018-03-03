@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <cmath>
 #include <string>
 
 #include "tinyexpr.h"
@@ -145,7 +146,11 @@ static int evaluate_expression(const wchar_t *cmd, parser_t &parser, io_streams_
     double v = te_interp(narrow_str.c_str(), &error);
 
     if (error.position == 0) {
-        if (opts.scale == 0) {
+        // If the double isn't finite (NaN or infinity), casting it to long would result in LONG_MIN.
+        // Which is not what we want.
+        if (!std::isfinite(v)) {
+            streams.out.append_format(L"%lf\n", v);
+        } else if (opts.scale == 0) {
             streams.out.append_format(L"%ld\n", static_cast<long>(v));
         } else {
             streams.out.append_format(L"%.*lf\n", opts.scale, v);
