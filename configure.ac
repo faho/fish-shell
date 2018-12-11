@@ -571,6 +571,7 @@ AC_COMPILE_IFELSE(
   [
     AC_LANG_PROGRAM(
       [
+    #define TPARM_VARARGS 1
 	#if HAVE_NCURSES_H
 	#include <ncurses.h>
 	#elif HAVE_NCURSES_CURSES_H
