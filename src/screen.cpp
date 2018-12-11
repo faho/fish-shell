@@ -214,7 +214,7 @@ static bool is_color_escape_seq(const wchar_t *code, size_t *resulting_length) {
 
     // Detect these terminfo color escapes with parameter value up to max_colors, all of which
     // don't move the cursor.
-    const char *const esc[] = {
+    char *const esc[] = {
         set_a_foreground, set_a_background, set_foreground, set_background,
     };
 
