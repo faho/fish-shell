@@ -193,7 +193,7 @@ int builtin_set_color(parser_t &parser, io_streams_t &streams, wchar_t **argv) {
     output_set_writer(set_color_builtin_outputter);
 
     if (bold && enter_bold_mode) {
-        writembs_nofail(tparm(enter_bold_mode, 1));
+        writembs_nofail(tparm(enter_bold_mode));
     }
 
     if (underline && enter_underline_mode) {
