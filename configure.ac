@@ -340,7 +340,6 @@ main(void)
    [ AC_MSG_RESULT([no])]
 )
 
-AC_DEFINE([NCURSES_CONST], [const], [ Make ncurses functionst const])
 AC_CHECK_DECL( [__NetBSD__], AC_DEFINE([TPARM_VARARGS], 1, [ Make tparm take varargs ]) )
 AC_CHECK_DECL( [mkostemp], [ AC_CHECK_FUNCS([mkostemp]) ] )
 

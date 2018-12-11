@@ -66,7 +66,8 @@ unsigned char index_for_color(rgb_color_t c) {
 static bool write_color_escape(const char *todo, unsigned int idx, bool is_fg) {
     if (term_supports_color_natively(idx)) {
         // Use tparm to emit color escape.
-        writembs(tparm(todo, idx));
+        // Nasty casty because macOS builds ncurses without const.
+        writembs(tparm((char *)todo, idx));
         return true;
     }
 
