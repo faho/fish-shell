@@ -44,7 +44,7 @@
 #include "util.h"      // IWYU pragma: keep
 
 #ifdef __NetBSD__
-#define TPARM_VARARGS 1
+#define tparm tiparm
 #elif defined(TPARM_SOLARIS_KLUDGE)
 #undef tparm
 
