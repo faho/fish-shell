@@ -483,7 +483,7 @@ static void s_move(screen_t *s, data_buffer_t *b, int new_x, int new_y) {
     int i;
     int x_steps, y_steps;
 
-    const char *str;
+    char *str;
     scoped_buffer_t scoped_buffer(b);
 
     y_steps = new_y - s->actual.cursor.y;
@@ -512,7 +512,7 @@ static void s_move(screen_t *s, data_buffer_t *b, int new_x, int new_y) {
         x_steps = 0;
     }
 
-    const char *multi_str = NULL;
+    char *multi_str = NULL;
     if (x_steps < 0) {
         str = cursor_left;
         multi_str = parm_left_cursor;
