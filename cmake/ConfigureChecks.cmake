@@ -143,4 +143,5 @@ int main () {
   HAVE_STD__MAKE_UNIQUE
 )
 
+SET(NCURSES_CONST "const")
 FIND_PROGRAM(SED sed)
