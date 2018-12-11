@@ -63,7 +63,9 @@ struct winsize {
 
 #endif
 
-#ifdef TPARM_SOLARIS_KLUDGE
+#ifdef __NetBSD__
+#define TPARM_VARARGS 1
+#elif defined(TPARM_SOLARIS_KLUDGE)
 /// Solaris tparm has a set fixed of paramters in its curses implementation, work around this here.
 #define tparm tparm_solaris_kludge
 char *tparm_solaris_kludge(char *str, long p1 = 0, long p2 = 0, long p3 = 0, long p4 = 0,
