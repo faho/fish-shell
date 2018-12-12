@@ -1,4 +1,4 @@
-image: freebsd
+image: archlinux
 packages:
   - cmake
   - ninja
