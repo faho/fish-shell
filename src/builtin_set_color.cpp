@@ -216,13 +216,13 @@ int builtin_set_color(parser_t &parser, io_streams_t &streams, wchar_t **argv) {
 
     if (bgcolor != NULL && bg.is_normal()) {
         write_color(rgb_color_t::black(), false /* not is_fg */);
-        writembs_nofail(tparm(exit_a(char *)ttribute_mode));
+        writembs_nofail(tparm((char *)exit_attribute_mode));
     }
 
     if (!fg.is_none()) {
         if (fg.is_normal() || fg.is_reset()) {
             write_color(rgb_color_t::black(), true /* is_fg */);
-            writembs_nofail(tparm(exit_a(char *)ttribute_mode));
+            writembs_nofail(tparm((char *)exit_attribute_mode));
         } else {
             if (!write_color(fg, true /* is_fg */)) {
                 // We need to do *something* or the lack of any output messes up
