@@ -9,7 +9,7 @@ tasks:
           cd fish
           mkdir build || :
           cd build
-          cmake -G Ninja "$srcdir/$_gitname" \
+          cmake -G Ninja .. \
           -DCMAKE_INSTALL_PREFIX=/usr \
           -DCMAKE_INSTALL_DATADIR=share \
           -DCMAKE_INSTALL_DOCDIR=share/doc/fish \
