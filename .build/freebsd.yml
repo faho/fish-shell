@@ -1,0 +1,21 @@
+image: freebsd
+packages:
+  - ncurses
+  - gcc
+  - gettext
+  - expect
+  - gmake
+  - automake
+  - pcre2
+sources:
+  - https://git.sr.ht/~faho/fish
+tasks:
+  - build: |
+          cd fish
+          autoreconf --no-recursive
+          ./configure --prefix=$HOME/prefix || cat config.log
+          gmake -j2 &&
+          gmake install
+  - test: |
+          cd fish
+          gmake test SHOW_INTERACTIVE_LOG=1
