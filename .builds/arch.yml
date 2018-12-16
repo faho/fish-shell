@@ -2,6 +2,7 @@ image: archlinux
 packages:
   - cmake
   - ninja
+  - expect
 sources:
   - https://git.sr.ht/~faho/fish
 tasks:
