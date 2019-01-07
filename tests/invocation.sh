@@ -57,6 +57,9 @@
 # Errors will be fatal
 set -e
 
+# If any command in the pipeline fails report the rc of the first fail.
+set -o pipefail
+
 # The directory this script is in (as everything is relative to here)
 here="$(cd "$(dirname "$0")" && pwd -P)"
 cd "$here"
@@ -204,12 +207,18 @@ test_file() {
     # We disable the exit-on-error here, so that we can catch the return
     # code.
     set +e
-    run_rc "cd \"$fish_dir\" && \"./$fish_leaf\" $test_args" \
+    eval "cd \"$fish_dir\" && \"./$fish_leaf\" $test_args" \
            2> "$test_stderr" \
            < /dev/null       \
            | filter "$grep_stdout" \
            > "$test_stdout"
     set -e
+
+    if [ "$rc" != '0' ] ; then
+        # Write the return code on to the end of the stderr, so that it can be
+        # checked like anything else.
+        echo "RC: $rc" >> "${test_stderr}"
+    fi
 
     # If the wanted output files are not present, they are assumed empty.
     if [ ! -f "$want_stdout" ] ; then
