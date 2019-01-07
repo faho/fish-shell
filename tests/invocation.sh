@@ -197,6 +197,8 @@ test_file() {
 
     echo -n "Testing file $file ${system_specific:+($system_name specific) }... "
 
+    dir="$PWD"
+
     # The hoops we are jumping through here, with changing directory are
     # so that we always execute fish as './fish', which means that any
     # error messages will appear the same, even if the tested binary
@@ -210,6 +212,8 @@ test_file() {
            | filter "$grep_stdout" \
            > "$test_stdout"
     set -e
+
+    cd "$PWD"
 
     # If the wanted output files are not present, they are assumed empty.
     if [ ! -f "$want_stdout" ] ; then
