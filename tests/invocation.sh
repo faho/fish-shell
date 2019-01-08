@@ -246,14 +246,14 @@ test_file() {
         err_status=1
     fi
 
-    if [ "$out_status" = '0' ] && \
-       [ "$err_status" = '0' ] ; then
+    if [ "$out_status$err_status" = "00" ]; then
         say "$term_green" "ok"
         # clean up tmp files
         rm -f "${test_stdout}" "${test_stderr}" "${empty}"
         rc=0
     else
         say "$term_red" "fail"
+        say "$term_red" "out: '$out_status' err: '$err_status'"
         say "$term_blue" "$test_args_literal" | sed 's/^/    /'
 
         if [ "$out_status" != '0' ] ; then
