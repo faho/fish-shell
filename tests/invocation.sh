@@ -55,7 +55,7 @@
 #
 
 # Errors will be fatal
-set -e
+# set -e
 
 # The directory this script is in (as everything is relative to here)
 here="$(cd "$(dirname "$0")" && pwd -P)"
@@ -204,13 +204,13 @@ test_file() {
     # is not one that we built here.
     # We disable the exit-on-error here, so that we can catch the return
     # code.
-    set +e
+    # set +e
     run_rc "cd \"$fish_dir\" && \"./$fish_leaf\" $test_args" \
            2> "$test_stderr" \
            < /dev/null       \
            | filter "$grep_stdout" \
            > "$test_stdout"
-    set -e
+    # set -e
 
     cd "$PWD"
 
