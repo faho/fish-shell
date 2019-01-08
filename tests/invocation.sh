@@ -186,7 +186,7 @@ test_file() {
     fi
 
     # Create an empty file so that we can compare against it if needed
-    echo -n > "${empty}"
+    touch "${empty}"
 
     # If they supplied a configuration file, we create it here
     if [ -f "$test_config" ] ; then
