@@ -254,16 +254,16 @@ test_file() {
     else
         say "$term_red" "fail"
         say "$term_red" "out: '$out_status' err: '$err_status'"
-        say "$term_blue" "$test_args_literal" # | sed 's/^/    /'
+        # say "$term_blue" "$test_args_literal" # | sed 's/^/    /'
 
-        if [ "$out_status" -ne 0 ] ; then
-            say "$term_yellow" "Output differs for file $file. Diff follows:"
-            "$difftool" -u "${test_stdout}" "${want_stdout}"
-        fi
-        if [ "$err_status" -ne 0 ] ; then
-            say "$term_yellow" "Error output differs for file $file. Diff follows:"
+        # if [ "$out_status" -ne 0 ] ; then
+        #     say "$term_yellow" "Output differs for file $file. Diff follows:"
+        #     "$difftool" -u "${test_stdout}" "${want_stdout}"
+        # fi
+        # if [ "$err_status" -ne 0 ] ; then
+        #     say "$term_yellow" "Error output differs for file $file. Diff follows:"
             "$difftool" -u "${test_stderr}" "${want_stderr}"
-        fi
+        # fi
         rc=1
     fi
 
