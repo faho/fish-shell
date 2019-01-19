@@ -179,3 +179,6 @@
 #define __sentinel
 #define __packed
 #endif
+
+/* The default width for emoji. 2 for Unicode 9, 1 otherwise. */
+#cmakedefine DEFAULT_EMOJI_WIDTH 1

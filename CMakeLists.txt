@@ -125,13 +125,19 @@ IF(INTERNAL_WCWIDTH)
     RUN_OUTPUT_VARIABLE WCW_OUTPUT)
   # If this refused to compile or run, we error out, because there's something wrong with the system. 
   if("${WCW_COMPILE_RESULT}" AND ("${WCW_RUN_RESULT}" EQUAL 0))
-    # If the value is < 1 or > 2, someting is wrong with the system.
-    if("${WCW_OUTPUT}" LESS 1 OR "{WCW_OUTPUT}" GREATER 2)
+    # If the value is > 2 or == 0, something is wrong with the system.
+    if("${WCW_OUTPUT}" GREATER 2 OR "${WCW_OUTPUT}" EQUAL 0)
       MESSAGE(FATAL_ERROR "Your system is broken!")
     ENDIF()
-    # If the value is 1 or 2, we use it.
-    SET(DEFAULT_EMOJI_WCWIDTH "${WCW_OUTPUT}")
-    MESSAGE("EMOJI WIDTH SET TO ${WCW_OUTPUT}")
+    # If the value is -1, we're running with a C locale.
+    if ("${WCW_OUTPUT}" EQUAL -1)
+      MESSAGE("It seems you are building with a non-unicode locale. Guessing your system does not support Unicode 9")
+      SET(DEFAULT_EMOJI_WIDTH 1)
+    ELSE()
+      # If the value is 1 or 2, we use it.
+      SET(DEFAULT_EMOJI_WCWIDTH "${WCW_OUTPUT}")
+    ENDIF()
+      MESSAGE("EMOJI WIDTH SET TO ${WCW_OUTPUT}")
   ELSE()
     MESSAGE(FATAL_ERROR "WCWIDTH FAILED!")
   ENDIF()
