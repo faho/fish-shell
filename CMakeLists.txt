@@ -118,11 +118,11 @@ OPTION(INTERNAL_WCWIDTH "use fallback wcwidth" ON)
 IF(INTERNAL_WCWIDTH)
   # Compile and run a small program that checks an emoji for its width.
   # TODO: Add a way to override this, especially as it relies on a unicode locale.
-  try_run(WCW_RUN_RESULT
-    WCW_COMPILE_RESULT
+  try_run(WCW_RUN_RESULT WCW_COMPILE_RESULT
     ${CMAKE_CURRENT_BINARY_DIR}/
     ${CMAKE_CURRENT_SOURCE_DIR}/test_wcwidth.cpp
     RUN_OUTPUT_VARIABLE WCW_OUTPUT)
+
   # If this refused to compile or run, we error out, because there's something wrong with the system. 
   if("${WCW_COMPILE_RESULT}" AND ("${WCW_RUN_RESULT}" EQUAL 0))
     # If the value is > 2 or == 0, something is wrong with the system.
