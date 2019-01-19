@@ -116,9 +116,29 @@ SET_SOURCE_FILES_PROPERTIES(src/fish_version.cpp
 
 OPTION(INTERNAL_WCWIDTH "use fallback wcwidth" ON)
 IF(INTERNAL_WCWIDTH)
-    add_definitions(-DHAVE_BROKEN_WCWIDTH=1)
+  # Compile and run a small program that checks an emoji for its width.
+  # TODO: Add a way to override this, especially as it relies on a unicode locale.
+  try_run(WCW_RUN_RESULT
+    WCW_COMPILE_RESULT
+    ${CMAKE_CURRENT_BINARY_DIR}/
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_wcwidth.cpp
+    RUN_OUTPUT_VARIABLE WCW_OUTPUT)
+  # If this refused to compile or run, we error out, because there's something wrong with the system. 
+  if("${WCW_COMPILE_RESULT}" AND ("${WCW_RUN_RESULT}" EQUAL 0))
+    # If the value is < 1 or > 2, someting is wrong with the system.
+    if("${WCW_OUTPUT}" LESS 1 OR "{WCW_OUTPUT}" GREATER 2)
+      MESSAGE(FATAL_ERROR "Your system is broken!")
+    ENDIF()
+    # If the value is 1 or 2, we use it.
+    SET(DEFAULT_EMOJI_WCWIDTH "${WCW_OUTPUT}")
+    MESSAGE("EMOJI WIDTH SET TO ${WCW_OUTPUT}")
+  ELSE()
+    MESSAGE(FATAL_ERROR "WCWIDTH FAILED!")
+  ENDIF()
+  
+  add_definitions(-DHAVE_BROKEN_WCWIDTH=1)
 ELSE()
-    add_definitions(-DHAVE_BROKEN_WCWIDTH=0)
+  add_definitions(-DHAVE_BROKEN_WCWIDTH=0)
 ENDIF()
 
 # Set up PCRE2
