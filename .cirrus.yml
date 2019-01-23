@@ -1,0 +1,15 @@
+freebsd_instance:
+  image: freebsd-12-0-release-amd64
+
+# Test FreeBSD in a full VM on cirrus-ci.com.
+task:
+  name: FreeBSD 12
+  # Install deps
+  install_script:
+    - pkg install -y ncurses gcc gettext expect cmake gmake pcre2 git
+  script:
+    - mkdir build
+    - cd build
+    - cmake ..
+    - gmake
+    - gmake test
