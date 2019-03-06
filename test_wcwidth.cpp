@@ -40,10 +40,12 @@ int main(int argc, char** argv) {
                                  "zh_CN.UTF-8", "zh_HK.UTF-8", "zh_SG.UTF-8", "zh_TW.UTF-8", "zu_ZA.UTF-8"
         };
         for (auto loc : locales) {
+            std::cerr << "CHECKING " << loc << "\n";
             auto ret = setlocale(LC_ALL, loc);
             if (ret) break;
         }
     }
     std::cout << wcwidth(L'😃');
+    std::cerr << wcwidth(L'😃');
     return 0;
 }
