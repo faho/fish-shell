@@ -37,15 +37,15 @@ int main(int argc, char** argv) {
                                  "so_DJ.UTF-8", "so_KE.UTF-8", "so_SO.UTF-8", "sq_AL.UTF-8", "st_ZA.UTF-8", "sv_FI.UTF-8",
                                  "sv_SE.UTF-8", "tcy_IN.UTF-8", "tg_TJ.UTF-8", "th_TH.UTF-8", "tl_PH.UTF-8", "tr_CY.UTF-8",
                                  "tr_TR.UTF-8", "uk_UA.UTF-8", "uz_UZ.UTF-8", "wa_BE.UTF-8", "xh_ZA.UTF-8", "yi_US.UTF-8",
-                                 "zh_CN.UTF-8", "zh_HK.UTF-8", "zh_SG.UTF-8", "zh_TW.UTF-8", "zu_ZA.UTF-8"
+                                 "zh_CN.UTF-8", "zh_HK.UTF-8", "zh_SG.UTF-8", "zh_TW.UTF-8", "zu_ZA.UTF-8",
+                                 NULL
         };
-        for (const char *loc : locales) {
-            std::cerr << "CHECKING " << loc << "\n";
+        for (int i = 0; locales[i]; i++) {
+            const char *loc = locales[i];
             auto ret = setlocale(LC_ALL, loc);
             if (ret) break;
         }
     }
     std::cout << wcwidth(L'😃');
-    std::cerr << wcwidth(L'😃');
     return 0;
 }
