@@ -84,12 +84,6 @@ int builtin_set_color(parser_t &parser, io_streams_t &streams, wchar_t **argv) {
     wchar_t *cmd = argv[0];
     int argc = builtin_count_args(argv);
 
-    // Some code passes variables to set_color that don't exist, like $fish_user_whatever. As a
-    // hack, quietly return failure.
-    if (argc <= 1) {
-        return EXIT_FAILURE;
-    }
-
     const wchar_t *bgcolor = NULL;
     bool bold = false, underline = false, italics = false, dim = false, reverse = false;
 
@@ -157,7 +151,9 @@ int builtin_set_color(parser_t &parser, io_streams_t &streams, wchar_t **argv) {
 
     if (fgcolors.empty() && bgcolor == NULL && !bold && !underline && !italics && !dim &&
         !reverse) {
-        streams.err.append_format(_(L"%ls: Expected an argument\n"), argv[0]);
+        // At least print a newline so the cartesian product doesn't kick in
+        // `echo (set_color $undefined)banana` should still print banana.
+        streams.out.append(L"\n");
         return STATUS_INVALID_ARGS;
     }
 
@@ -175,6 +171,7 @@ int builtin_set_color(parser_t &parser, io_streams_t &streams, wchar_t **argv) {
     // Test if we have at least basic support for setting fonts, colors and related bits - otherwise
     // just give up...
     if (cur_term == NULL || !exit_attribute_mode) {
+        streams.out.append(L"\n");
         return STATUS_CMD_ERROR;
     }
     outputter_t outp;
@@ -223,7 +220,12 @@ int builtin_set_color(parser_t &parser, io_streams_t &streams, wchar_t **argv) {
     }
 
     // Output the collected string.
-    streams.out.append(str2wcstring(outp.contents()));
+    if (!outp.contents().empty()) {
+        streams.out.append(str2wcstring(outp.contents()));
+    } else {
+        // Just to be absolutely sure, print at least a newline.
+        streams.out.append(L"\n");
+    }
 
     return STATUS_CMD_OK;
 }

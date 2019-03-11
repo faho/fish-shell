@@ -28,7 +28,7 @@ struct builtin_data_t {
 };
 
 /// The default prompt for the read command.
-#define DEFAULT_READ_PROMPT L"set_color green; echo -n read; set_color normal; echo -n \"> \""
+#define DEFAULT_READ_PROMPT L"echo -n (set_color green)read(set_color normal)\"> \""
 
 enum { COMMAND_NOT_BUILTIN, BUILTIN_REGULAR, BUILTIN_FUNCTION };
 
