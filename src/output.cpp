@@ -394,24 +394,9 @@ int outputter_t::writech(wint_t ch) {
 /// is needed because those strings may contain chars specially encoded using ENCODE_DIRECT_BASE.
 void outputter_t::writestr(const wchar_t *str) {
     assert(str && "Empty input string");
-
-    size_t len = wcstombs(0, str, 0);  // figure amount of space needed
-    if (len == (size_t)-1) {
-        debug(1, L"Tried to print invalid wide character string");
-        return;
-    }
-
-    // Convert the string.
-    len++;
-    char *buffer, static_buffer[256];
-    if (len <= sizeof static_buffer) {
-        buffer = static_buffer;
-    } else {
-        buffer = new char[len];
-    }
-    wcstombs(buffer, str, len);
-    this->writestr(buffer, len);
-    if (buffer != static_buffer) delete[] buffer;
+    char *buffer = wcs2str(str);
+    this->writestr(buffer, strlen(buffer));
+    free(buffer);
 }
 
 outputter_t &outputter_t::stdoutput() {
