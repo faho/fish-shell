@@ -282,15 +282,6 @@ static wcstring str2wcs_internal(const char *in, const size_t in_len) {
     result.reserve(in_len);
     size_t in_pos = 0;
 
-    if (MB_CUR_MAX == 1) {
-        // Single-byte locale, all values are legal.
-        while (in_pos < in_len) {
-            result.push_back((unsigned char)in[in_pos]);
-            in_pos++;
-        }
-        return result;
-    }
-
     mbstate_t state = {};
     while (in_pos < in_len) {
         bool use_encode_direct = false;
