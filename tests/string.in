@@ -388,4 +388,8 @@ function dualsplit
 end
 count (dualsplit)
 
+logmsg tokenize
+string tokenize 'foo ba|r'
+echo
+string tokenize -- '"foo bar" banana'
 exit 0

@@ -1260,6 +1260,29 @@ static int string_trim(parser_t &parser, io_streams_t &streams, int argc, wchar_
     return ntrim > 0 ? STATUS_CMD_OK : STATUS_CMD_ERROR;
 }
 
+static int string_tokenize(parser_t &parser, io_streams_t &streams, int argc, wchar_t **argv) {
+    options_t opts;
+    int optind;
+    int retval = parse_opts(&opts, &optind, 0, argc, argv, parser, streams);
+    if (retval != STATUS_CMD_OK) return retval;
+
+    bool have_output = false;
+    arg_iterator_t aiter(argv, optind, streams);
+    while (const wcstring *arg = aiter.nextstr()) {
+        tokenizer_t tok(arg->c_str(), TOK_ACCEPT_UNFINISHED);
+        tok_t token;
+        while (tok.next(&token)) {
+            have_output = true;
+            wcstring tmp = tok.text_of(token);
+            unescape_string_in_place(&tmp, UNESCAPE_INCOMPLETE);
+            streams.out.append(tmp);
+            streams.out.append(L'\n');
+        }
+    }
+
+    return have_output ? STATUS_CMD_OK : STATUS_CMD_ERROR;
+}
+
 // A helper function for lower and upper.
 static int string_transform(parser_t &parser, io_streams_t &streams, int argc, wchar_t **argv,
                             std::wint_t (*func)(std::wint_t)) {
@@ -1300,12 +1323,14 @@ static const struct string_subcommand {
                    wchar_t **argv);                       //!OCLINT(unused param)
 }
 
-string_subcommands[] = {
-    {L"escape", &string_escape}, {L"join", &string_join},         {L"join0", &string_join0},
-    {L"length", &string_length}, {L"match", &string_match},       {L"replace", &string_replace},
-    {L"split", &string_split},   {L"split0", &string_split0},     {L"sub", &string_sub},
-    {L"trim", &string_trim},     {L"lower", &string_lower},       {L"upper", &string_upper},
-    {L"repeat", &string_repeat}, {L"unescape", &string_unescape}, {NULL, NULL}};
+string_subcommands[] = {{L"escape", &string_escape},     {L"join", &string_join},
+                        {L"join0", &string_join0},       {L"length", &string_length},
+                        {L"match", &string_match},       {L"replace", &string_replace},
+                        {L"split", &string_split},       {L"split0", &string_split0},
+                        {L"sub", &string_sub},           {L"tokenize", &string_tokenize},
+                        {L"trim", &string_trim},         {L"lower", &string_lower},
+                        {L"upper", &string_upper},       {L"repeat", &string_repeat},
+                        {L"unescape", &string_unescape}, {NULL, NULL}};
 
 /// The string builtin, for manipulating strings.
 int builtin_string(parser_t &parser, io_streams_t &streams, wchar_t **argv) {

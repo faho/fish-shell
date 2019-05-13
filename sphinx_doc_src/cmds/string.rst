@@ -28,6 +28,8 @@ Synopsis
 
 ``string sub [(-s | --start) START] [(-l | --length) LENGTH] [(-q | --quiet)] [STRING...]``
 
+``string tokenize [STRING...]``
+
 ``string trim [(-l | --left)] [(-r | --right)] [(-c | --chars CHARS)] [(-q | --quiet)] [STRING...]``
 
 ``string unescape [--style=xxx] [STRING...]``
@@ -160,6 +162,15 @@ See also ``read --delimiter``.
 ``string sub [(-s | --start) START] [(-l | --length) LENGTH] [(-q | --quiet)] [STRING...]``
   
 ``string sub`` prints a substring of each string argument. The start of the substring can be specified with ``-s`` or ``--start`` followed by a 1-based index value. Positive index values are relative to the start of the string and negative index values are relative to the end of the string. The default start value is 1. The length of the substring can be specified with ``-l`` or ``--length``. If the length is not specified, the substring continues to the end of each STRING. Exit status: 0 if at least one substring operation was performed, 1 otherwise.
+
+"tokenize" subcommand
+---------------------
+
+``string tokenize [STRING...]``
+
+``string tokenize`` tokenizes the given strings. That means it reads them into separate words like the shell would do in a script or a commandline. So `"foo bar" banana` is turned into the two tokens `foo bar` and `banana`.
+
+This is similar to the `--tokenize` option to :ref:`commandline <cmd-commandline>`, but in contrast to that this also keeps special tokens like pipes and redirections.
 
 "trim" subcommand
 -----------------

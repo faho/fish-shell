@@ -476,3 +476,13 @@ Split something
 ####################
 # string split0 in functions
 4
+
+####################
+# tokenize
+foo
+ba
+|
+r
+
+foo bar
+banana
