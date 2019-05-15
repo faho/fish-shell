@@ -1262,6 +1262,7 @@ static int string_trim(parser_t &parser, io_streams_t &streams, int argc, wchar_
 
 static int string_tokenize(parser_t &parser, io_streams_t &streams, int argc, wchar_t **argv) {
     options_t opts;
+    opts.no_quoted_valid = true;
     int optind;
     int retval = parse_opts(&opts, &optind, 0, argc, argv, parser, streams);
     if (retval != STATUS_CMD_OK) return retval;
@@ -1274,7 +1275,9 @@ static int string_tokenize(parser_t &parser, io_streams_t &streams, int argc, wc
         while (tok.next(&token)) {
             have_output = true;
             wcstring tmp = tok.text_of(token);
-            unescape_string_in_place(&tmp, UNESCAPE_INCOMPLETE);
+            if (opts.no_quoted) {
+                unescape_string_in_place(&tmp, UNESCAPE_INCOMPLETE);
+            }
             streams.out.append(tmp);
             streams.out.append(L'\n');
         }

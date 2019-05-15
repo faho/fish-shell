@@ -28,7 +28,7 @@ Synopsis
 
 ``string sub [(-s | --start) START] [(-l | --length) LENGTH] [(-q | --quiet)] [STRING...]``
 
-``string tokenize [STRING...]``
+``string tokenize [(-n | --no-quoted)] [STRING...]``
 
 ``string trim [(-l | --left)] [(-r | --right)] [(-c | --chars CHARS)] [(-q | --quiet)] [STRING...]``
 
@@ -166,11 +166,13 @@ See also ``read --delimiter``.
 "tokenize" subcommand
 ---------------------
 
-``string tokenize [STRING...]``
+``string tokenize [(-n | --no-quoted)] [STRING...]``
 
 ``string tokenize`` tokenizes the given strings. That means it reads them into separate words like the shell would do in a script or a commandline. So `"foo bar" banana` is turned into the two tokens `foo bar` and `banana`.
 
 This is similar to the `--tokenize` option to :ref:`commandline <cmd-commandline>`, but in contrast to that this also keeps special tokens like pipes and redirections.
+
+Without `--no-quoted` or `-n`, it will leave quotes intact. With them, it will strip the outermost layer of each token, so `"foo 'bar'"` becomes `foo 'bar'`.
 
 "trim" subcommand
 -----------------
