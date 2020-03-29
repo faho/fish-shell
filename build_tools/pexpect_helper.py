@@ -223,12 +223,12 @@ class SpawnedProc(object):
             # and 11.5 days for the delta.
             if delta:
                 timestamp -= delta
-                timestampstr = "{timestamp:+10.2f}".format(timestamp=timestamp)
+                timestampstr = "{timestamp:+10.2f} ms".format(timestamp=timestamp)
             else:
-                timestampstr = "{timestamp:10.2f}".format(timestamp=timestamp)
+                timestampstr = "{timestamp:10.2f} ms".format(timestamp=timestamp)
             delta = m.when * 1000.0
             dir = m.dir
-            print("{dir} {timestampstr} ({filename}:{lineno}): {BOLD}{etext}{RESET}".format(
+            print("{dir} {timestampstr} (Line {lineno}): {BOLD}{etext}{RESET}".format(
                 dir=m.dir, timestampstr=timestampstr, filename=m.filename, lineno=m.lineno, etext=etext, **colors))
 
         print("")
