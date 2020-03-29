@@ -214,12 +214,22 @@ class SpawnedProc(object):
             ),
         )
         # Show the last 5 messages.
+        delta=None
         for m in self.messages[-5:]:
             etext = escape(m.text)
             timestamp = m.when * 1000.0
+            # Use relative timestamps and add a sign.
+            # This assumes a max length of 10^10 milliseconds (115 days) for the initial timestamp,
+            # and 11.5 days for the delta.
+            if delta:
+                timestamp -= delta
+                timestampstr = "{timestamp:+10.2f}".format(timestamp=timestamp)
+            else:
+                timestampstr = "{timestamp:10.2f}".format(timestamp=timestamp)
+            delta = m.when * 1000.0
             dir = m.dir
-            print("{dir} {timestamp:.2f} ({filename}:{lineno}): {BOLD}{etext}{RESET}".format(
-                dir=m.dir, timestamp=timestamp, filename=m.filename, lineno=m.lineno, etext=etext, **colors))
+            print("{dir} {timestampstr} ({filename}:{lineno}): {BOLD}{etext}{RESET}".format(
+                dir=m.dir, timestampstr=timestampstr, filename=m.filename, lineno=m.lineno, etext=etext, **colors))
 
         print("")
         print("Buffer:")
