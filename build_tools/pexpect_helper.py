@@ -74,8 +74,8 @@ class Message(object):
         when: a timestamp of when the message was sent
     """
 
-    DIR_SEND = "SENT"
-    DIR_RECV = "RECV"
+    DIR_SEND = "Input "
+    DIR_RECV = "Output"
     MODULE = sys.modules[__name__]
 
     def __init__(self, dir, text, when):
@@ -94,14 +94,6 @@ class Message(object):
     def received(text, when):
         """ Return a RECV message with the given text. """
         return Message(Message.DIR_RECV, text, when)
-
-    def formatted(self):
-        """ Return a human-readable string representing this message. """
-        etext = escape(self.text)
-        timestamp = self.when * 1000.0
-        return "{dir} {timestamp:.2f} ({filename}:{lineno}): {etext}".format(
-            timestamp=timestamp, etext=etext, **vars(self)
-        )
 
 
 class SpawnedProc(object):
@@ -216,15 +208,23 @@ class SpawnedProc(object):
         filename, lineno, code_context = get_callsite()
         print("{RED}Failed to match:{NORMAL} {pat}".format(pat=escape(pat), **colors))
         print(
-            "{msg} from {filename}:{lineno}: {code}".format(
-                msg=msg, filename=filename, lineno=lineno, code="\n".join(code_context)
-            )
+            "{RED}{msg}{RESET} from {filename}:{lineno}: {LIGHTRED}{code}{RESET}".format(
+                msg=msg, filename=filename, lineno=lineno, code="\n".join(code_context),
+                **colors
+            ),
         )
         # Show the last 5 messages.
         for m in self.messages[-5:]:
-            print(m.formatted())
+            etext = escape(m.text)
+            timestamp = m.when * 1000.0
+            dir = m.dir
+            print("{dir} {timestamp:.2f} ({filename}:{lineno}): {BOLD}{etext}{RESET}".format(
+                dir=m.dir, timestamp=timestamp, filename=m.filename, lineno=m.lineno, etext=etext, **colors))
+
+        print("")
         print("Buffer:")
         print(escape(self.spawn.before))
+        print("")
         sys.exit(1)
 
     def sleep(self, secs):
