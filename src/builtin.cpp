@@ -48,6 +48,7 @@
 #include "builtin_fg.h"
 #include "builtin_functions.h"
 #include "builtin_history.h"
+#include "builtin_is.h"
 #include "builtin_jobs.h"
 #include "builtin_math.h"
 #include "builtin_printf.h"
@@ -385,6 +386,7 @@ static const builtin_data_t builtin_datas[] = {
     {L"functions", &builtin_functions, N_(L"List or remove functions")},
     {L"history", &builtin_history, N_(L"History of commands executed by user")},
     {L"if", &builtin_generic, N_(L"Evaluate block if condition is true")},
+    {L"is", &builtin_is, N_(L"Check conditions")},
     {L"jobs", &builtin_jobs, N_(L"Print currently running jobs")},
     {L"math", &builtin_math, N_(L"Evaluate math expressions")},
     {L"not", &builtin_generic, N_(L"Negate exit status of job")},
