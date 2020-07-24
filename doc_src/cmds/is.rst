@@ -72,6 +72,11 @@ All of these commands return false if less than two numbers were given. A number
 - ``greater-equal``, like ``greater``, but also true if the numbers are equal.
 - ``less-equal``, like ``less``, but also true if the numbers are equal.
 
+The command names are chosen after the operator that would be put between the operands, so::
+
+  is greater 2 1 # compares 2 > 1
+  is less 1 2 3 4 5 # compares 1 < 2 < 3 < 4 < 5
+
 Examples
 --------
 
