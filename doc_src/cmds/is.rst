@@ -42,7 +42,7 @@ String commands
 
 - ``empty`` checks if all given strings are empty. This returns true if no string was given.
 - ``notempty`` checks if all given strings are notempty.
-- ``same`` checks if all the given strings are the same.
+- ``same`` checks if all the given strings are the same. This returns false if only one string was given.
 
 To check if any string is not empty, negate the ``is`` instead: ``not is empty "" "" "foo"`` will be true.
 
@@ -63,6 +63,8 @@ Number commands
 ---------------
 
 ``is`` can compare floating point numbers. The radix character is ``.``, not dependent on locale.
+
+All of these commands return false if less than two numbers were given. A number isn't equal to, greater than or less than nothing.
 
 - ``equal`` checks if all given numbers are numerically equal - unlike ``same``, this ignores leading zeroes and trailing zeroes after a "." and can handle hexadecimal numbers with ``0x``.
 - ``greater`` checks if every number is greater than the next, i.e. the numbers are in strictly descending order.
