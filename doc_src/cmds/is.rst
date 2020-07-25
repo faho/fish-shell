@@ -38,6 +38,8 @@ Unlike ``test``, ``is`` does not support logical operators and lacks some negate
 
 ``is`` prints the help when given ``-h`` or ``--help` as the first argument.
 
+.. _cmd-is-strings:
+
 String commands
 ---------------
 
@@ -49,6 +51,8 @@ String commands
 To check if any string is not empty, negate the ``is`` instead: ``not is empty "" "" "foo"`` will be true.
 
 To check if a string has one of a number of given values, use :ref:`contains <cmd-contains>`: ``contains -- foo bar foo baz``.
+
+.. _cmd-is-files:
 
 File and directory commands
 ---------------------------
@@ -66,11 +70,17 @@ File and directory commands
 Number commands
 ---------------
 
-``is`` can compare floating point numbers. The radix character is ``.``, not dependent on locale.
+``is`` can compare floating point numbers.
+
+- The radix character is ``.``, not dependent on locale.
+- It ignores leading and trailing whitespace, leading zeroes, trailing zeroes after a "."
+- It can handle hexadecimal numbers with ``0x``.
+
+See also the ``number`` command (under :ref:`String commands <cmd-is-strings>`) to check if something is a number in this sense.
 
 All of these commands return false if less than two numbers were given. A number isn't equal to, greater than or less than nothing.
 
-- ``equal`` checks if all given numbers are numerically equal - unlike ``same``, this ignores leading zeroes and trailing zeroes after a "." and can handle hexadecimal numbers with ``0x``.
+- ``equal`` checks if all given numbers are numerically equal
 - ``greater`` checks if every number is greater than the next, i.e. the numbers are in strictly descending order.
 - ``less`` checks if every number is smaller than the next, i.e. they are in strictly ascending order.
 - ``greater-equal``, like ``greater``, but also true if the numbers are equal.
