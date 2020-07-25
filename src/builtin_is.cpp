@@ -116,6 +116,15 @@ int is_same(parser_t &parser, io_streams_t &streams, int argc, wchar_t **argv) {
     return STATUS_CMD_OK;
 }
 
+int is_number(parser_t &parser, io_streams_t &streams, int argc, wchar_t **argv) {
+    if (argc < 1) return STATUS_CMD_ERROR;
+    number_t ln;
+    for (int i = 0; i < argc; i++) {
+        if (!parse_number(argv[i], &ln)) return STATUS_CMD_ERROR;
+    }
+    return STATUS_CMD_OK;
+}
+
 int is_numeric(parser_t &parser, io_streams_t &streams, int argc, wchar_t **argv, std::function<bool (number_t, number_t)> compare) {
     if (argc < 2) return STATUS_CMD_ERROR;
     number_t ln, rn;
@@ -225,6 +234,7 @@ is_subcommands[] = {
                     {L"empty", &is_empty},
                     {L"notempty", &is_notempty},
                     {L"same", &is_same},
+                    {L"number", &is_number},
                     {L"greater", &is_greater},
                     {L"greater-equal", &is_greater_equal},
                     {L"less", &is_less},

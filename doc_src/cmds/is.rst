@@ -11,6 +11,7 @@ Synopsis
     is empty STRINGS...
     is notempty STRINGS...
     is same STRINGS...
+    is number STRINGS...
     is path PATHS...
     is file PATHS...
     is directory PATHS...
@@ -43,6 +44,7 @@ String commands
 - ``empty`` checks if all given strings are empty. This returns true if no string was given.
 - ``notempty`` checks if all given strings are notempty.
 - ``same`` checks if all the given strings are the same. This returns false if only one string was given.
+- ``number`` checks if all the given strings are numbers that ``is`` understands. See :ref:`Number commands <cmd-is-numbers>` for more details.
 
 To check if any string is not empty, negate the ``is`` instead: ``not is empty "" "" "foo"`` will be true.
 
@@ -58,6 +60,8 @@ File and directory commands
 - ``readable`` checks if all given paths are readable.
 - ``writable`` checks if all given paths are writable.
 - ``executable`` checks if all given paths are executable.
+
+.. _cmd-is-numbers:
 
 Number commands
 ---------------
