@@ -203,7 +203,7 @@ int is_readable(parser_t &parser, io_streams_t &streams, int argc, wchar_t **arg
                                                        });
 }
 
-int is_writeable(parser_t &parser, io_streams_t &streams, int argc, wchar_t **argv) {
+int is_writable(parser_t &parser, io_streams_t &streams, int argc, wchar_t **argv) {
     return is_func(parser, streams, argc, argv, [](wchar_t *arg) {
                                                            return !waccess(arg, W_OK);
                                                        });
@@ -235,7 +235,7 @@ is_subcommands[] = {
                     {L"directory", &is_directory},
                     {L"link", &is_link},
                     {L"readable", &is_readable},
-                    {L"writeable", &is_writeable},
+                    {L"writable", &is_writable},
                     {L"executable", &is_executable},
                     {nullptr, nullptr},
 };
