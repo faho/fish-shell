@@ -34,6 +34,13 @@ else:
     from urllib.parse import parse_qs
 
 
+def find_executable(exe):
+    for p in os.environ["PATH"].split(os.pathsep):
+        proposed_path = os.path.join(p, exe)
+        if os.access(proposed_path, os.X_OK):
+            return proposed_path
+
+
 def isMacOS10_12_5_OrLater():
     """ Return whether this system is macOS 10.12.5 or a later version. """
     try:
@@ -60,7 +67,7 @@ def is_wsl():
 
 def is_termux():
     """ Return whether we are running under the Termux application for Android"""
-    return "com.termux" in os.environ["PATH"]
+    return "com.termux" in os.environ["PATH"] and find_executable("termux-open-url")
 
 
 # Disable CLI web browsers
@@ -1410,13 +1417,7 @@ fish_bin_dir = os.environ.get("__fish_bin_dir")
 fish_bin_path = None
 if not fish_bin_dir:
     print("The $__fish_bin_dir environment variable is not set. " "Looking in $PATH...")
-    # distutils.spawn is terribly broken, because it looks in wd before PATH,
-    # and doesn't actually validate that the file is even executable
-    for p in os.environ["PATH"].split(os.pathsep):
-        proposed_path = os.path.join(p, "fish")
-        if os.access(proposed_path, os.X_OK):
-            fish_bin_path = proposed_path
-            break
+    fish_bin_path = find_executable("fish")
     if not fish_bin_path:
         print("fish could not be found. Is fish installed correctly?")
         sys.exit(-1)
