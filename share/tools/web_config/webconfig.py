@@ -8,7 +8,6 @@ try:
 except ImportError:
     from cgi import escape as escape_html
 from distutils.version import LooseVersion
-from distutils.spawn import find_executable
 import glob
 import multiprocessing.pool
 import operator
@@ -54,7 +53,7 @@ def is_wsl():
 
 def is_termux():
     """ Return whether we are running under the Termux application for Android"""
-    return "com.termux" in os.environ["PATH"] and find_executable("termux-open-url")
+    return "com.termux" in os.environ["PATH"]
 
 
 # Disable CLI web browsers
