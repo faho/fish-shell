@@ -49,21 +49,9 @@ maybe_t<int> builtin_cd(parser_t &parser, io_streams_t &streams, wchar_t **argv)
     wcstring pwd = parser.vars().get_pwd_slash();
     maybe_t<wcstring> mdir = path_get_cdpath(dir_in, pwd, parser.vars());
     if (!mdir) {
-        if (errno == ENOTDIR) {
-            streams.err.append_format(_(L"%ls: '%ls' is not a directory\n"), cmd, dir_in.c_str());
-        } else if (errno == ENOENT) {
-            streams.err.append_format(_(L"%ls: The directory '%ls' does not exist\n"), cmd,
-                                      dir_in.c_str());
-        } else if (errno == EROTTEN) {
-            streams.err.append_format(_(L"%ls: '%ls' is a rotten symlink\n"), cmd, dir_in.c_str());
-        } else {
-            streams.err.append_format(_(L"%ls: Unknown error trying to locate directory '%ls'\n"),
-                                      cmd, dir_in.c_str());
-        }
-
-        if (!parser.is_interactive()) streams.err.append(parser.current_line());
-
-        return STATUS_CMD_ERROR;
+        // If we have an error, we still try to use the unmodified directory.
+        // Any errors should be reported later.
+        mdir = dir_in;
     }
     const wcstring &dir = *mdir;
 
@@ -80,8 +68,16 @@ maybe_t<int> builtin_cd(parser_t &parser, io_streams_t &streams, wchar_t **argv)
         status = wstat(dir, &buffer);
         if (!status && S_ISDIR(buffer.st_mode)) {
             streams.err.append_format(_(L"%ls: Permission denied: '%ls'\n"), cmd, dir_in.c_str());
-        } else {
+        } else if (errno == ENOTDIR) {
             streams.err.append_format(_(L"%ls: '%ls' is not a directory\n"), cmd, dir_in.c_str());
+        } else if (errno == ENOENT) {
+            streams.err.append_format(_(L"%ls: The directory '%ls' does not exist\n"), cmd,
+                                      dir_in.c_str());
+        } else if (errno == EROTTEN) {
+            streams.err.append_format(_(L"%ls: '%ls' is a rotten symlink\n"), cmd, dir_in.c_str());
+        } else {
+            streams.err.append_format(_(L"%ls: Unknown error trying to locate directory '%ls'\n"),
+                                      cmd, dir_in.c_str());
         }
 
         if (!parser.is_interactive()) {
