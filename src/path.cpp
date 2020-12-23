@@ -210,6 +210,14 @@ maybe_t<wcstring> path_get_cdpath(const wcstring &dir, const wcstring &wd,
                 return dir;
             }
             err = ENOTDIR;
+        } else if (waccess(dir, F_OK)) {
+            // This exists, but some systems have a broken `stat()`.
+            // Fall back to actually opening the dir
+            // if this doesn't work it's truly not a directory.
+            dir_t fd(dir);
+            if (fd.valid()) {
+                return dir;
+            }
         }
     }
 
