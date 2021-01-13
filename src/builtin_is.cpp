@@ -251,7 +251,7 @@ is_subcommands[] = {
 };
 
 /// The is builtin.
-int builtin_is(parser_t &parser, io_streams_t &streams, wchar_t **argv) {
+maybe_t<int> builtin_is(parser_t &parser, io_streams_t &streams, wchar_t **argv) {
     wchar_t *cmd = argv[0];
     int argc = builtin_count_args(argv);
     if (argc <= 1) {
