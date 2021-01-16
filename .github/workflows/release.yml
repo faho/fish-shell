@@ -1,0 +1,19 @@
+name: Release
+
+on:
+  create # when someone creates a branch or tag
+
+jobs:
+  ubuntu:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Check for tag
+      run: |
+          git tag -l $GITHUB_REF || exit 1
+    - name: Install deps
+      run: |
+        sudo apt install gettext libncurses5-dev libpcre2-dev python3-pip
+        sudo pip3 install pexpect
