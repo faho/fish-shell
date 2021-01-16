@@ -12,7 +12,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Check for tag
       run: |
-          git tag -l $GITHUB_REF || exit 1
+          test -n "$GITHUB_REF" || exit 1
+          test -n "$(git tag -l $GITHUB_REF)" || exit 1
     - name: Install deps
       run: |
         sudo apt install gettext libncurses5-dev libpcre2-dev python3-pip
