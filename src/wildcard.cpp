@@ -462,6 +462,7 @@ static const wchar_t *file_get_desc(int lstat_res, const struct stat &lbuf, int 
 static bool wildcard_test_flags_then_complete(const wcstring &filepath, const wcstring &filename,
                                               const wchar_t *wc, expand_flags_t expand_flags,
                                               completion_receiver_t *out) {
+    FLOGF(wildcard, L"wtftc %ls %ls %ls", filepath.c_str(), filename.c_str(), wc);
     // Check if it will match before stat().
     if (wildcard_complete(filename, wc, {}, nullptr, expand_flags, 0) != wildcard_result_t::match) {
         return false;
@@ -472,10 +473,13 @@ static bool wildcard_test_flags_then_complete(const wcstring &filepath, const wc
     int stat_errno = 0;
     int lstat_res = lwstat(filepath, &lstat_buf);
     if (lstat_res >= 0) {
+        FLOGF(wildcard, L"Have lstat");
         if (S_ISLNK(lstat_buf.st_mode)) {
+            FLOGF(wildcard, L"Have link");
             stat_res = wstat(filepath, &stat_buf);
 
             if (stat_res < 0) {
+                FLOGF(wildcard, L"Have borken stat");
                 // In order to differentiate between e.g. rotten symlinks and symlink loops, we also
                 // need to know the error status of wstat.
                 stat_errno = errno;
@@ -492,22 +496,26 @@ static bool wildcard_test_flags_then_complete(const wcstring &filepath, const wc
 
     const bool need_directory = expand_flags & expand_flag::directories_only;
     if (need_directory && !is_directory) {
+        FLOGF(wildcard, L"Need a directory but is not directory");
         return false;
     }
 
     const bool executables_only = expand_flags & expand_flag::executables_only;
     if (executables_only && (!is_executable || fast_waccess(stat_buf, X_OK) != 0)) {
+        FLOGF(wildcard, L"Need an executable but is no executable");
         return false;
     }
 
     if (is_windows_subsystem_for_linux() &&
         string_suffixes_string_case_insensitive(L".dll", filename)) {
+        FLOGF(wildcard, L"WSL dll hack");
         return false;
     }
 
     // Compute the description.
     wcstring desc;
     if (expand_flags & expand_flag::gen_descriptions) {
+        FLOGF(wildcard, L"Getting description");
         desc = file_get_desc(lstat_res, lstat_buf, stat_res, stat_buf, stat_errno);
 
         if (file_size >= 0) {
@@ -520,9 +528,11 @@ static bool wildcard_test_flags_then_complete(const wcstring &filepath, const wc
     // call stat() in some cases.
     auto desc_func = const_desc(desc);
     if (is_directory) {
+        FLOGF(wildcard, L"Is a directory, doing special wildcard complete");
         return wildcard_complete(filename + L'/', wc, desc_func, out, expand_flags,
                                  COMPLETE_NO_SPACE) == wildcard_result_t::match;
     }
+    FLOGF(wildcard, L"Is not a directory, doing wildcard complete");
     return wildcard_complete(filename, wc, desc_func, out, expand_flags, 0) ==
            wildcard_result_t::match;
 }
@@ -655,6 +665,7 @@ class wildcard_expander_t {
         if (flags & expand_flag::special_for_cd) abs_path = normalize_path(abs_path);
 
         size_t before = this->resolved_completions->size();
+        FLOGF(wildcard, L"add_completion_result: '%ls'", abs_path.c_str());
         if (wildcard_test_flags_then_complete(abs_path, filename, wildcard.c_str(), this->flags,
                                               this->resolved_completions)) {
             // Hack. We added this completion result based on the last component of the wildcard.
@@ -685,6 +696,7 @@ class wildcard_expander_t {
             }
 
             this->did_add = true;
+            FLOGF(wildcard, L"added completion result: '%ls'", abs_path.c_str());
         }
     }
 
