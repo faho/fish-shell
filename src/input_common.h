@@ -80,8 +80,6 @@ enum class readline_cmd_t {
     cancel,
     undo,
     redo,
-    begin_undo_group,
-    end_undo_group,
     repeat_jump,
     // NOTE: This one has to be last.
     reverse_repeat_jump
