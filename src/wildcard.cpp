@@ -21,6 +21,7 @@
 #include "complete.h"
 #include "expand.h"
 #include "fallback.h"  // IWYU pragma: keep
+#include "flog.h"
 #include "future_feature_flags.h"
 #include "path.h"
 #include "reader.h"
@@ -732,18 +733,24 @@ void wildcard_expander_t::expand_trailing_slash(const wcstring &base_dir, const 
         return;
     }
 
+    FLOGF(wildcard, L"expanding_trailing_slash '%ls'", base_dir.c_str());
     if (!(flags & expand_flag::for_completions)) {
+        FLOGF(wildcard, L"Not for completions");
         // Trailing slash and not accepting incomplete, e.g. `echo /xyz/`. Insert this file if it
         // exists.
         if (waccess(base_dir, F_OK) == 0) {
+            FLOGF(wildcard, L"waccess okay");
             this->add_expansion_result(wcstring{base_dir});
         }
     } else {
+        FLOGF(wildcard, L"For completions");
         // Trailing slashes and accepting incomplete, e.g. `echo /xyz/<tab>`. Everything is added.
         DIR *dir = open_dir(base_dir);
         if (dir) {
+            FLOGF(wildcard, L"opening dir okay");
             wcstring next;
             while (wreaddir(dir, next) && !interrupted_or_overflowed()) {
+                FLOGF(wildcard, L"Readdir: '%ls'", next.c_str());
                 if (!next.empty() && next.at(0) != L'.') {
                     this->try_add_completion_result(base_dir + next, next, L"", prefix);
                 }
@@ -758,6 +765,8 @@ void wildcard_expander_t::expand_intermediate_segment(const wcstring &base_dir, 
                                                       const wchar_t *wc_remainder,
                                                       const wcstring &prefix) {
     wcstring name_str;
+    FLOGF(wildcard, L"expand_intermediate_segment: %ls, %ls, %ls, %ls",
+          base_dir.c_str(), wc_segment.c_str(), wc_remainder, prefix.c_str());
     while (!interrupted_or_overflowed() && wreaddir_for_dirs(base_dir_fp, &name_str)) {
         // Note that it's critical we ignore leading dots here, else we may descend into . and ..
         if (!wildcard_match(name_str, wc_segment, true)) {
@@ -768,16 +777,19 @@ void wildcard_expander_t::expand_intermediate_segment(const wcstring &base_dir, 
         wcstring full_path = base_dir + name_str;
         struct stat buf;
         if (0 != wstat(full_path, &buf) || !S_ISDIR(buf.st_mode)) {
+            FLOGF(wildcard, L"not a directory %ls", full_path.c_str());
             // We either can't stat it, or we did but it's not a directory.
             continue;
         }
 
         const file_id_t file_id = file_id_t::from_stat(buf);
         if (!this->visited_files.insert(file_id).second) {
+            FLOGF(wildcard, L"symlink loop %ls", full_path.c_str());
             // Symlink loop! This directory was already visited, so skip it.
             continue;
         }
 
+        FLOGF(wildcard, L"have file %ls", full_path.c_str());
         // We made it through. Perform normal wildcard expansion on this new directory, starting at
         // our tail_wc, which includes the ANY_STRING_RECURSIVE guy.
         full_path.push_back(L'/');
@@ -851,12 +863,17 @@ void wildcard_expander_t::expand_literal_intermediate_segment_with_fuzz(const wc
 void wildcard_expander_t::expand_last_segment(const wcstring &base_dir, DIR *base_dir_fp,
                                               const wcstring &wc, const wcstring &prefix) {
     wcstring name_str;
+    FLOGF(wildcard, L"expand_last_segment: %ls, %ls, %ls", base_dir.c_str(),
+          wc.c_str(), prefix.c_str());
     while (!interrupted_or_overflowed() && wreaddir(base_dir_fp, name_str)) {
         if (flags & expand_flag::for_completions) {
             this->try_add_completion_result(base_dir + name_str, name_str, wc, prefix);
         } else {
             // Normal wildcard expansion, not for completions.
+            FLOGF(wildcard, L"Trying wildcard match: %ls, %ls, %ls", base_dir.c_str(),
+                  wc.c_str(), prefix.c_str());
             if (wildcard_match(name_str, wc, true /* skip files with leading dots */)) {
+                FLOGF(wildcard, L"Have wildcard match '%ls'", name_str.c_str());
                 this->add_expansion_result(base_dir + name_str);
             }
         }
@@ -882,6 +899,9 @@ void wildcard_expander_t::expand(const wcstring &base_dir, const wchar_t *wc,
     if (interrupted_or_overflowed()) {
         return;
     }
+
+    FLOGF(wildcard, L"expanding base_dir: '%ls' and wc '%ls' for prefix '%ls'",
+          base_dir.c_str(), wc, effective_prefix.c_str());
 
     // Get the current segment and compute interesting properties about it.
     const wchar_t *const next_slash = std::wcschr(wc, L'/');
@@ -946,6 +966,8 @@ void wildcard_expander_t::expand(const wcstring &base_dir, const wchar_t *wc,
 
         DIR *dir = open_dir(base_dir);
         if (dir) {
+            FLOGF(wildcard, L"opened base_dir: '%ls'",
+                  base_dir.c_str());
             if (is_last_segment) {
                 // Last wildcard segment, nonempty wildcard.
                 this->expand_last_segment(base_dir, dir, wc_segment, effective_prefix);
@@ -972,6 +994,9 @@ void wildcard_expander_t::expand(const wcstring &base_dir, const wchar_t *wc,
                                                   effective_prefix);
             }
             closedir(dir);
+        } else {
+            FLOGF(wildcard, L"failed to open base_dir: '%ls'",
+                  base_dir.c_str());
         }
     }
 }
