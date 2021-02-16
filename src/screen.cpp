@@ -626,7 +626,7 @@ static void s_write_char(screen_t *s, wchar_t c, size_t width) {
 static void s_write_mbs(screen_t *screen, const char *s) { writembs(screen->outp(), s); }
 
 /// Convert a wide string to a multibyte string and append it to the buffer.
-static void s_write_str(screen_t *screen, const wchar_t *s) { screen->outp().writestr(s); }
+static void s_write_str(screen_t *screen, const wchar_t *s) { screen->outp().writestr_no_encode(s); }
 
 /// Returns the length of the "shared prefix" of the two lines, which is the run of matching text
 /// and colors. If the prefix ends on a combining character, do not include the previous character

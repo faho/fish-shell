@@ -369,6 +369,11 @@ void outputter_t::writestr(const wchar_t *str) {
     if (buffer != static_buffer) delete[] buffer;
 }
 
+void outputter_t::writestr_no_encode(const wchar_t *str) {
+    std::string narrow = wcs2string(str);
+    this->writestr(narrow.c_str(), narrow.size());
+}
+
 outputter_t &outputter_t::stdoutput() {
     ASSERT_IS_MAIN_THREAD();
     static outputter_t res(STDOUT_FILENO);

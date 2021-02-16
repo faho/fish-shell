@@ -67,6 +67,9 @@ class outputter_t {
     /// Write a wide character string to the receiver.
     void writestr(const wcstring &str) { writestr(str.c_str()); }
 
+    /// Write a wide character string without reencoding ENCODE_DIRECT chars.
+    void writestr_no_encode(const wchar_t *str);
+
     /// Write the given terminfo string to the receiver, like tputs().
     int term_puts(const char *str, int affcnt);
 
