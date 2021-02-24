@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pexpect_helper import SpawnedProc
+import platform
 import subprocess
 import sys
 import time
@@ -15,7 +16,9 @@ send, sendline, sleep, expect_prompt, expect_re, expect_str = (
 )
 expect_prompt()
 
-sendline("sleep 500")
+# Hack: NetBSD's sleep quits here for unknown reasons.
+testproc="sleep 500" if platform.system() != "NetBSD" else "cat"
+sendline(testproc)
 sendline("set -l foo bar; echo $foo")
 expect_str("")
 sleep(0.2)
@@ -29,7 +32,7 @@ expect_str("bar")
 
 expect_prompt()
 sendline("fg")
-expect_str("Send job 1, 'sleep 500' to foreground")
+expect_str("Send job 1, '" + testproc + "' to foreground")
 sleep(0.2)
 sendline("set -l foo bar; echo $foo")
 expect_str("")
