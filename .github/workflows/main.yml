@@ -132,9 +132,9 @@ jobs:
     steps:
     - uses: egor-tensin/setup-cygwin@v3
     - uses: actions/checkout@v2
-    - with:
-      platform: x64
-      packages: cmake make python3-pexpect
+      with:
+        platform: x64
+        packages: cmake make python3-pexpect
     - name: cmake
       run: |
         mkdir build && cd build
