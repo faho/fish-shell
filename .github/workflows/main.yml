@@ -126,13 +126,15 @@ jobs:
         make test
 
   cygwin:
+
     runs-on: windows-latest
-    uses: egor-tensin/setup-cygwin@v3
-    uses: actions/checkout@v2
-    with:
+
+    steps:
+    - uses: egor-tensin/setup-cygwin@v3
+    - uses: actions/checkout@v2
+    - with:
       platform: x64
       packages: cmake make python3-pexpect
-    steps:
     - name: cmake
       run: |
         mkdir build && cd build
