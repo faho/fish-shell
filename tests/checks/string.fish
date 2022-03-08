@@ -129,6 +129,11 @@ string length --visible \bf\b
 string length --visible \bf\b\b\b\b\b
 # CHECK: 0
 
+# Escape+something is a one-char escape
+# This renders as "oo".
+string length --visible \efoo\eb\eg\e0
+# CHECK: 2
+
 string sub --length 2 abcde
 # CHECK: ab
 

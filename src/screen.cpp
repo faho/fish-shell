@@ -289,6 +289,10 @@ maybe_t<size_t> escape_code_length(const wchar_t *code) {
     // (also tparm is *slow*, we should try to find a better replacement)
     if (!found) found = is_color_escape_seq(code, &esc_seq_len);
 
+    if (!found && code[1]) {
+        // Got an escape and then something else. That swallows both.
+        return maybe_t<size_t>{2};
+    }
     return found ? maybe_t<size_t>{esc_seq_len} : none();
 }
 
