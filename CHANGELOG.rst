@@ -5,8 +5,10 @@ This release of fish fixes the following problems identified in fish 3.4.0:
 
 - The ``fish_title`` function now uses an old-school ``()`` command substitution to prevent an error when an old fish is still running on upgrade and picks the new function up (:issue:`8778`)
 - Building on NetBSD (:issue:`8788`) and OpenIndiana (:issue:`8780`) works again
-- The new C++ implementation of ``nextd-or-forward-word``, bound to alt-right-arrow by default, accidentally moved like ``forward-bigword`` (:issue:`8790`).
-- ``funcsave -q`` wasn't actually quiet and the long version was removed. This has been corrected (:issue:`8830`).
+- ``nextd-or-forward-word`` and ``prevd-or-forward-word``, bound to alt-right-arrow by default, accidentally moved by bigwords (:issue:`8790`).
+- ``funcsave -q`` wasn't actually quiet and the long ``--quiet`` option was removed. This has been corrected (:issue:`8830`).
+- A syntax error in the csharp completion was corrected.
+- The ``nmcli`` completions no longer print an error if networkmanager isn't running
 
 If you are upgrading from version 3.3.1 or before, please also review the release notes for 3.3.0 (included below).
 
