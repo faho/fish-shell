@@ -46,6 +46,16 @@ function fish_add_path --description "Add paths to the PATH"
         # realpath complains if a parent directory does not exist, so we silence stderr.
         set -l p (builtin realpath -s -- $path 2>/dev/null)
 
+        if test -f "$p"
+            # if given a file, take the parent directory.
+            if set -q _flag_verbose;
+                # print a message in verbose mode
+                printf (_ "Using parent directory for file: %s\n") "$p"
+            end
+            # (this should be "basename")
+            set p (string replace -r '/[^/]+$' '' -- $p)
+        end
+
         # Ignore non-existing paths
         if not test -d "$p"
             # path does not exist

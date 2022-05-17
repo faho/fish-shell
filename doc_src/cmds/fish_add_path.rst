@@ -26,7 +26,7 @@ Components are added in the order they are given, and they are prepended to the 
 
 If no component is new, the variable (:envvar:`fish_user_paths` or :envvar:`$PATH`) is not set again or otherwise modified, so variable handlers are not triggered.
 
-If a component is not an existing directory, ``fish_add_path`` ignores it.
+If a component is not an existing directory, ``fish_add_path`` ignores it, unless it's a file, in which case ``fish_add_path`` adds the parent directory.
 
 Options
 -------
@@ -85,3 +85,6 @@ Example
 
    # I have installed ruby via homebrew
    > fish_add_path /usr/local/opt/ruby/bin
+
+   # I want to add this new-fangled "cargo" executable to my path
+   > fish_add_path ~/.cargo/bin/cargo
