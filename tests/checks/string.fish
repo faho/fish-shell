@@ -211,6 +211,18 @@ string trim --right --chars=yz xyzzy zany
 # CHECK: x
 # CHECK: zan
 
+string trim --matching -c ! !abc!
+# CHECK: abc
+string trim --matching -c ! !abc
+# CHECK: !abc
+string trim --matching -c !f !!f!!abc!!f!!
+# CHECK: abc
+string trim --matching -c !f !f!!abc!!f!!
+# CHECK: f!!abc!!f!
+
+string trim --matching -c "'" "'this is not quoted"
+# CHECK: 'this is not quoted
+
 echo \x07 | string escape
 # CHECK: \cg
 

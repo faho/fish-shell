@@ -159,6 +159,7 @@ struct options_t {  //!OCLINT(too many fields)
     bool invert_valid = false;
     bool left_valid = false;
     bool length_valid = false;
+    bool matching_valid = false;
     bool max_valid = false;
     bool no_newline_valid = false;
     bool no_quoted_valid = false;
@@ -183,6 +184,7 @@ struct options_t {  //!OCLINT(too many fields)
     bool index = false;
     bool invert_match = false;
     bool left = false;
+    bool matching = false;
     bool no_newline = false;
     bool no_quoted = false;
     bool quiet = false;
@@ -448,6 +450,16 @@ static int handle_flag_m(const wchar_t **argv, parser_t &parser, io_streams_t &s
     return STATUS_INVALID_ARGS;
 }
 
+static int handle_flag_M(const wchar_t **argv, parser_t &parser, io_streams_t &streams,
+                         const wgetopter_t &w, options_t *opts) {
+    if (opts->matching_valid) {
+        opts->matching = true;
+        return STATUS_CMD_OK;
+    }
+    string_unknown_option(parser, streams, argv[0], argv[w.woptind - 1]);
+    return STATUS_INVALID_ARGS;
+}
+
 static int handle_flag_n(const wchar_t **argv, parser_t &parser, io_streams_t &streams,
                          const wgetopter_t &w, options_t *opts) {
     if (opts->count_valid) {
@@ -570,6 +582,7 @@ static wcstring construct_short_opts(options_t *opts) {  //!OCLINT(high npath co
     if (opts->visible_valid) short_opts.append(L"V");
     if (opts->left_valid) short_opts.append(L"l");
     if (opts->length_valid) short_opts.append(L"l:");
+    if (opts->matching_valid) short_opts.append(L"M");
     if (opts->max_valid) short_opts.append(L"m:");
     if (opts->no_newline_valid) short_opts.append(L"N");
     if (opts->no_quoted_valid) short_opts.append(L"n");
@@ -602,6 +615,7 @@ static const struct woption long_options[] = {{L"all", no_argument, nullptr, 'a'
                                               {L"visible", no_argument, nullptr, 'V'},
                                               {L"left", no_argument, nullptr, 'l'},
                                               {L"length", required_argument, nullptr, 'l'},
+                                              {L"matching", no_argument, nullptr, 'M'},
                                               {L"max", required_argument, nullptr, 'm'},
                                               {L"no-empty", no_argument, nullptr, 'n'},
                                               {L"no-newline", no_argument, nullptr, 'N'},
@@ -622,7 +636,8 @@ static const std::unordered_map<char, decltype(*handle_flag_N)> flag_to_function
     {'f', handle_flag_f}, {'g', handle_flag_g}, {'i', handle_flag_i}, {'l', handle_flag_l},
     {'m', handle_flag_m}, {'n', handle_flag_n}, {'q', handle_flag_q}, {'r', handle_flag_r},
     {'s', handle_flag_s}, {'V', handle_flag_V}, {'v', handle_flag_v}, {'w', handle_flag_w},
-    {1, handle_flag_1}};
+    {1, handle_flag_1}, {'M', handle_flag_M}
+};
 
 /// Parse the arguments for flags recognized by a specific string subcommand.
 static int parse_opts(options_t *opts, int *optind, int n_req_args, int argc, const wchar_t **argv,
@@ -1826,10 +1841,17 @@ static int string_trim(parser_t &parser, io_streams_t &streams, int argc, const 
     opts.chars_to_trim_valid = true;
     opts.left_valid = true;
     opts.right_valid = true;
+    opts.matching_valid = true;
     opts.quiet_valid = true;
     int optind;
     int retval = parse_opts(&opts, &optind, 0, argc, argv, parser, streams);
     if (retval != STATUS_CMD_OK) return retval;
+
+    if (opts.matching && (opts.left || opts.right)) {
+        streams.err.append_format(BUILTIN_ERR_COMBO2, L"string",
+                                  _(L"--matching can't be used with --left or --right"));
+        return STATUS_INVALID_ARGS;
+    }
 
     // If neither left or right is specified, we do both.
     if (!opts.left && !opts.right) {
@@ -1850,6 +1872,23 @@ static int string_trim(parser_t &parser, io_streams_t &streams, int argc, const 
         if (opts.left) {
             size_t first_to_keep = arg->find_first_not_of(opts.chars_to_trim);
             begin = (first_to_keep == wcstring::npos ? end : first_to_keep);
+        }
+
+        if (opts.matching) {
+            size_t i = 0;
+            for (; i < begin; i++) {
+                if (arg->at(i) != arg->at(arg->size() - i - 1)) {
+                    break;
+                }
+            }
+
+            if (i) {
+                begin = i;
+                end = arg->size() - i;
+            } else {
+                begin = 0;
+                end = arg->size();
+            }
         }
         assert(begin <= end && end <= arg->size());
         ntrim += arg->size() - (end - begin);

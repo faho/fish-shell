@@ -30,7 +30,7 @@ Synopsis
                   [-q | --quiet] [-r | --right] [STRING ...]
     string sub [(-s | --start) START] [(-e | --end) END] [(-l | --length) LENGTH]
                [-q | --quiet] [STRING ...]
-    string trim [-l | --left] [-r | --right] [(-c | --chars) CHARS]
+    string trim [-l | --left] [-r | --right] [(-c | --chars) CHARS] [(-M | --matching)]
                 [-q | --quiet] [STRING ...]
     string unescape [--style=] [STRING ...]
     string upper [-q | --quiet] [STRING ...]
