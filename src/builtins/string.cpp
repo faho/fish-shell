@@ -1842,6 +1842,7 @@ static int string_trim(parser_t &parser, io_streams_t &streams, int argc, const 
     opts.left_valid = true;
     opts.right_valid = true;
     opts.matching_valid = true;
+    opts.max_valid = true;
     opts.quiet_valid = true;
     int optind;
     int retval = parse_opts(&opts, &optind, 0, argc, argv, parser, streams);
@@ -1872,6 +1873,13 @@ static int string_trim(parser_t &parser, io_streams_t &streams, int argc, const 
         if (opts.left) {
             size_t first_to_keep = arg->find_first_not_of(opts.chars_to_trim);
             begin = (first_to_keep == wcstring::npos ? end : first_to_keep);
+        }
+
+        if (opts.max) {
+            assert(opts.max > 0);
+            size_t max = static_cast<size_t>(opts.max);
+            if (begin > max) begin = max;
+            if (arg->size() - end > max) end = arg->size() - max;
         }
 
         if (opts.matching) {

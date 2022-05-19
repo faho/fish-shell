@@ -223,6 +223,15 @@ string trim --matching -c !f !f!!abc!!f!!
 string trim --matching -c "'" "'this is not quoted"
 # CHECK: 'this is not quoted
 
+string trim --max=1 -c "." "...banana.."
+# CHECK: ..banana.
+
+string trim --max=2 -c "." "...banana.."
+# CHECK: .banana
+
+string trim --max=5 -c "." "...banana.."
+# CHECK: banana
+
 echo \x07 | string escape
 # CHECK: \cg
 

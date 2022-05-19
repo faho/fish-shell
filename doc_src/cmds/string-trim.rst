@@ -8,7 +8,7 @@ Synopsis
 
 .. synopsis::
 
-    string trim [-l | --left] [-r | --right] [(-c | --chars) CHARS] [(-M | --matching)]
+    string trim [-l | --left] [-r | --right] [(-c | --chars) CHARS] [(-M | --matching)] [(-m | --max) MAX]
                 [-q | --quiet] [STRING ...]
 
 .. END SYNOPSIS
@@ -20,6 +20,7 @@ Description
 
 ``string trim`` removes leading and trailing whitespace from each *STRING*. If **-l** or **--left** is given, only leading whitespace is removed. If **-r** or **--right** is given, only trailing whitespace is trimmed. The **-c** or **--chars** switch causes the characters in *CHARS* to be removed instead of whitespace. If **-M** or **--matching** is given, characters will only be removed if the same are on both sides of the string, so a prefix is removed if it matches a (reversed) suffix. This allows removing e.g. layers of quotes.
 
+If **-m** or **--max** is given, only trim at most *MAX* characters from each side.
 
 Exit status: 0 if at least one character was trimmed, or 1 otherwise.
 
