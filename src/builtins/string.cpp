@@ -840,6 +840,7 @@ class string_matcher_t {
         : opts(std::move(opts_)), streams(streams_) {}
 
     virtual ~string_matcher_t() = default;
+    virtual bool test_match(const wcstring &arg) = 0;
     virtual bool report_matches(const wcstring &arg) = 0;
     int match_count() const { return total_matched; }
 
@@ -870,6 +871,21 @@ class wildcard_matcher_t final : public string_matcher_t {
     }
 
     ~wildcard_matcher_t() override = default;
+
+
+    bool test_match(const wcstring &arg) override {
+        // Note: --all is a no-op for glob matching since the pattern is always matched
+        // against the entire argument.
+        bool match;
+
+        if (opts.ignore_case) {
+            match = wildcard_match(wcstolower(arg), wcpattern, false);
+        } else {
+            match = wildcard_match(arg, wcpattern, false);
+        }
+
+        return match ^ opts.invert_match;
+    }
 
     bool report_matches(const wcstring &arg) override {
         // Note: --all is a no-op for glob matching since the pattern is always matched
@@ -1159,6 +1175,18 @@ class pcre2_matcher_t final : public string_matcher_t {
           parser(parser_) {}
 
     ~pcre2_matcher_t() override = default;
+
+    bool test_match(const wcstring &arg) override {
+        assert(regex.code && "test_matches should only be called if the regex was valid");
+        // See pcre2demo.c for an explanation of this logic.
+        PCRE2_SIZE arglen = arg.length();
+        auto rc = report_match(arg, pcre2_match(regex.code, PCRE2_SPTR(arg.c_str()), arglen, 0, 0,
+                                                regex.match, nullptr));
+
+        if (rc == match_result_t::pcre2_error) return false;
+
+        return (rc == match_result_t::match) == !opts.invert_match;
+    }
 
     bool report_matches(const wcstring &arg) override {
         // A return value of true means all is well (even if no matches were found), false indicates
