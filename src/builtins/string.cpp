@@ -1338,12 +1338,8 @@ static int string_between(parser_t &parser, io_streams_t &streams, int argc, con
     const wchar_t *from_pattern = opts.arg1;
     const wchar_t *to_pattern = opts.arg2;
 
-    bool had_from = false;
-    bool have_from = false;
     std::unique_ptr<string_matcher_t> from_matcher;
     std::unique_ptr<string_matcher_t> to_matcher;
-    int to_matches = 0;
-    int from_matches = 0;
     if (opts.regex) {
         from_matcher = make_unique<pcre2_matcher_t>(cmd, from_pattern, opts, streams, parser);
         to_matcher = make_unique<pcre2_matcher_t>(cmd, to_pattern, opts, streams, parser);
@@ -1356,42 +1352,33 @@ static int string_between(parser_t &parser, io_streams_t &streams, int argc, con
         return STATUS_INVALID_ARGS;
     }
 
+    bool had_from = false;
+    bool have_from = false;
+    bool prev_from = false;
+
     arg_iterator_t aiter(argv, optind, streams);
     while (const wcstring *arg = aiter.nextstr()) {
-        // TODO: Gosh dangit give that a proper return code.
-        if (!have_from && !from_matcher->report_matches(*arg)) {
-            return STATUS_INVALID_ARGS;
-        } else if (have_from && !to_matcher->report_matches(*arg)) {
-            return STATUS_INVALID_ARGS;
+        if (!have_from) {
+            have_from = from_matcher->test_match(*arg);
+            had_from = had_from || have_from;
+        } else {
+            have_from = !to_matcher->test_match(*arg);
         }
 
-        if (!have_from && from_matcher->match_count() > from_matches) {
-            have_from = true;
-            had_from = true;
-        } else if (have_from && to_matcher->match_count() > to_matches) {
-            have_from = false;
-        } else if (have_from && to_matcher->match_count() == to_matches) {
+        if (have_from && prev_from) {
             streams.out.append(*arg);
             if (aiter.want_newline()) {
                 streams.out.append(L'\n');
             }
         }
 
-        to_matches = to_matcher->match_count();
-        from_matches = from_matcher->match_count();
-        if (opts.quiet && have_from && to_matcher->match_count() > 0) return STATUS_CMD_OK;
-    }
-
-    // TODO: Do *not* import vars here it makes no sense.
-    if (from_matcher->match_count() == 0) {
-        from_matcher->clear_capture_vars();
-    }
-    if (to_matcher->match_count() == 0) {
-        to_matcher->clear_capture_vars();
+        if (opts.quiet && have_from) return STATUS_CMD_OK;
+        prev_from = have_from;
     }
 
     return had_from ? STATUS_CMD_OK : STATUS_CMD_ERROR;
 }
+
 static int string_pad(parser_t &parser, io_streams_t &streams, int argc, const wchar_t **argv) {
     options_t opts;
     opts.char_to_pad_valid = true;

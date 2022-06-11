@@ -806,3 +806,33 @@ printf \<
 printf my-password | string replace -ra . \*
 printf \>\n
 # CHECK: <***********>
+
+printf '
+start
+once upon a midnight dreary
+while I pondered, weak and weary
+end
+suddenly there came a tapping,
+tapping on my boooty
+
+start
+booty
+booty
+start
+booty
+booty
+end
+start
+rockin
+everywhere
+' |
+string between start end
+#CHECK: once upon a midnight dreary
+#CHECK: while I pondered, weak and weary
+#CHECK: booty
+#CHECK: booty
+#CHECK: start
+#CHECK: booty
+#CHECK: booty
+#CHECK: rockin
+#CHECK: everywhere
