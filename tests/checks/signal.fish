@@ -59,17 +59,11 @@ $fish_test_helper sigkill_self
 # CHECK: PROCESS_EXIT 137
 # CHECK: JOB_EXIT 0
 
-function test_blocks
-    block -l
-    command echo "This is the process whose exit event should be blocked"
-    echo "This should come before the event handler"
-end
-test_blocks
-# CHECK: This is the process whose exit event should be blocked
-# CHECK: This should come before the event handler
+block -l
+# CHECKERR: block: The 'block' command has been disabled and will be removed.
+# CHECKERR: {{.*}}signal.fish (line {{\d+}}):
+# CHECKERR: block -l
+# CHECKERR: ^
+# CHECKERR: (Type 'help block' for related documentation)
 
-echo "Now event handler should have run"
-# CHECK: PROCESS_EXIT 0
-# CHECK: JOB_EXIT 0
-# CHECK: Now event handler should have run
-# CHECK: PROCESS_EXIT 0
+# CHECK: PROCESS_EXIT 1

@@ -75,6 +75,10 @@ maybe_t<int> builtin_block(parser_t &parser, io_streams_t &streams, const wchar_
     int argc = builtin_count_args(argv);
     block_cmd_opts_t opts;
 
+    streams.err.append_format(_(L"%ls: The 'block' command has been disabled and will be removed.\n"), cmd);
+    builtin_print_error_trailer(parser, streams.err, cmd);
+    return STATUS_CMD_ERROR;
+
     int optind;
     int retval = parse_cmd_opts(opts, &optind, argc, argv, parser, streams);
     if (retval != STATUS_CMD_OK) return retval;
