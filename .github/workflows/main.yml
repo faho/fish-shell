@@ -56,7 +56,7 @@ jobs:
         cmake -DFISH_USE_SYSTEM_PCRE2=OFF ..
     - name: make
       run: |
-        make
+        make -j4
     - name: make test
       run: |
         make test
@@ -84,7 +84,7 @@ jobs:
         cmake ..
     - name: make
       run: |
-        make
+        make -j4
     # This is broken as of 2022-04-18, ASAN crashes on
     # autosuggest_suggest_special for no discernable reason.
     # Unable to reproduce locally.
@@ -112,7 +112,7 @@ jobs:
         cmake ..
     - name: make
       run: |
-        make
+        make -j4
     - name: make test
       run: |
         make test
@@ -133,7 +133,7 @@ jobs:
         cmake -DWITH_GETTEXT=NO ..
     - name: make
       run: |
-        make
+        make -j4
     - name: make test
       run: |
         make test
