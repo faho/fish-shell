@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sys/utsname.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -391,6 +392,11 @@ void env_init(const struct config_paths_t *paths, bool do_uvars, bool default_pa
             vars.set_one(L"SHLVL", ENV_GLOBAL | ENV_EXPORT, str2wcstring(shlvl_var));
         }
     }
+
+    utsname info;
+    uname(&info);
+
+    vars.set_one(L"OSTYPE", ENV_GLOBAL, str2wcstring(info.sysname));
 
     // initialize the PWD variable if necessary
     // Note we may inherit a virtual PWD that doesn't match what getcwd would return; respect that
