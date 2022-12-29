@@ -8,8 +8,6 @@ APP_DIR="$APP_BUILD_DIR/AppDir"
 # FISH_NCURSES_ROOT must be provided externally.
 
 env \
-  CXXFLAGS='-static-libgcc -static-libstdc++ -DTPUTS_USES_INT_ARG' \
-  LDFLAGS='-static-libgcc -static-libstdc++' \
   cmake -S "$ROOT_DIR" -B "$APP_BUILD_DIR" \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_POLICY_DEFAULT_CMP0074=NEW \
@@ -18,7 +16,6 @@ env \
   -DBUILD_DOCS=ON \
   -DWITH_GETTEXT=OFF \
   -DFISH_USE_SYSTEM_PCRE2=OFF \
-  -DFISH_ALLOW_UNSUPPORTED_STATIC_LINKING=ON \
   -DCurses_ROOT="$FISH_NCURSES_ROOT" \
   -DCURSES_NEED_NCURSES=ON
 
