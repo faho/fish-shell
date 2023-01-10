@@ -70,6 +70,11 @@ int parser_t::set_var_and_fire(const wcstring &key, env_mode_flags_t mode, wcstr
     return res;
 }
 
+int parser_t::set_var_no_fire(const wcstring &key, env_mode_flags_t mode, wcstring_list_t vals) {
+    int res = vars().set(key, mode, std::move(vals));
+    return res;
+}
+
 int parser_t::set_var_and_fire(const wcstring &key, env_mode_flags_t mode, wcstring val) {
     wcstring_list_t vals;
     vals.push_back(std::move(val));

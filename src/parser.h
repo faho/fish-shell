@@ -408,6 +408,7 @@ class parser_t : public std::enable_shared_from_this<parser_t> {
     /// \return a value like ENV_OK.
     int set_var_and_fire(const wcstring &key, env_mode_flags_t mode, wcstring val);
     int set_var_and_fire(const wcstring &key, env_mode_flags_t mode, wcstring_list_t vals);
+    int set_var_no_fire(const wcstring &key, env_mode_flags_t mode, wcstring_list_t vals);
 
     /// Update any universal variables and send event handlers.
     /// If \p always is set, then do it even if we have no pending changes (that is, look for

@@ -44,12 +44,14 @@ struct set_cmd_opts_t {
     bool append = false;
     bool prepend = false;
     bool preserve_failure_exit_status = true;
+    bool no_event = false;
 };
 
 /// Values used for long-only options.
 enum {
     opt_path = 1,
     opt_unpath = 2,
+    opt_no_event = 3,
 };
 
 // Variables used for parsing the argument list. This command is atypical in using the "+"
@@ -72,6 +74,7 @@ static const struct woption long_options[] = {{L"export", no_argument, 'x'},
                                               {L"path", no_argument, opt_path},
                                               {L"unpath", no_argument, opt_unpath},
                                               {L"help", no_argument, 'h'},
+                                              {L"no-event", no_argument, opt_no_event},
                                               {}};
 
 // Hint for invalid path operation with a colon.
@@ -143,6 +146,10 @@ static int parse_cmd_opts(set_cmd_opts_t &opts, int *optind,  //!OCLINT(high ncs
                 opts.unpathvar = true;
                 break;
             }
+            case opt_no_event: {
+                opts.no_event = true;
+                break;
+            }
             case 'U': {
                 opts.universal = true;
                 break;
@@ -190,8 +197,8 @@ static int parse_cmd_opts(set_cmd_opts_t &opts, int *optind,  //!OCLINT(high ncs
 
 static int validate_cmd_opts(const wchar_t *cmd, const set_cmd_opts_t &opts, int argc,
                              const wchar_t *argv[], parser_t &parser, io_streams_t &streams) {
-    // Can't query and erase or list.
-    if (opts.query && (opts.erase || opts.list)) {
+    // Can't query and erase or list, and querying doesn't create an event.
+    if (opts.query && (opts.erase || opts.list || opts.no_event)) {
         streams.err.append_format(BUILTIN_ERR_COMBO, cmd);
         builtin_print_error_trailer(parser, streams.err, cmd);
         return STATUS_INVALID_ARGS;
@@ -237,7 +244,7 @@ static int validate_cmd_opts(const wchar_t *cmd, const set_cmd_opts_t &opts, int
 
     // The --show flag cannot be combined with any other flag.
     if (opts.show && (opts.local || opts.function || opts.global || opts.erase || opts.list ||
-                      opts.exportv || opts.universal)) {
+                      opts.exportv || opts.universal || opts.no_event || opts.pathvar || opts.unpathvar)) {
         streams.err.append_format(BUILTIN_ERR_COMBO, cmd);
         builtin_print_error_trailer(parser, streams.err, cmd);
         return STATUS_INVALID_ARGS;
@@ -301,8 +308,13 @@ static void handle_env_return(int retval, const wchar_t *cmd, const wcstring &ke
 /// Call vars.set. If this is a path variable, e.g. PATH, validate the elements. On error, print a
 /// description of the problem to stderr.
 static int env_set_reporting_errors(const wchar_t *cmd, const wcstring &key, int scope,
-                                    wcstring_list_t list, io_streams_t &streams, parser_t &parser) {
-    int retval = parser.set_var_and_fire(key, scope | ENV_USER, std::move(list));
+                                    wcstring_list_t list, io_streams_t &streams, parser_t &parser, bool no_event) {
+    int retval;
+    if (!no_event) {
+        retval = parser.set_var_and_fire(key, scope | ENV_USER, std::move(list));
+    } else {
+        retval = parser.set_var_no_fire(key, scope | ENV_USER, std::move(list));
+    }
     // If this returned OK, the parser already fired the event.
     handle_env_return(retval, cmd, key, streams);
 
@@ -651,14 +663,14 @@ static int builtin_set_erase(const wchar_t *cmd, set_cmd_opts_t &opts, int argc,
                 if (retval != ENV_NOT_FOUND) {
                     handle_env_return(retval, cmd, split->varname, streams);
                 }
-                if (retval == ENV_OK) {
+                if (retval == ENV_OK && !opts.no_event) {
                     event_fire(parser, event_t::variable_erase(split->varname));
                 }
             } else {  // remove just the specified indexes of the var
                 if (!split->var) return STATUS_CMD_ERROR;
                 wcstring_list_t result = erased_at_indexes(split->var->as_list(), split->indexes);
                 retval = env_set_reporting_errors(cmd, split->varname, scope, std::move(result),
-                                                  streams, parser);
+                                                  streams, parser, opts.no_event);
             }
 
             // Set $status to the last error value.
@@ -799,7 +811,7 @@ static int builtin_set_set(const wchar_t *cmd, set_cmd_opts_t &opts, int argc, c
 
     // Set the value back in the variable stack and fire any events.
     int retval = env_set_reporting_errors(cmd, split->varname, scope, std::move(new_values),
-                                          streams, parser);
+                                          streams, parser, opts.no_event);
 
     if (retval == ENV_OK) {
         warn_if_uvar_shadows_global(cmd, opts, split->varname, streams, parser);

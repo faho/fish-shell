@@ -938,3 +938,32 @@ begin
 end
 echo $secret
 # CHECK: global 4 23 42
+
+# --no-event
+
+function onevent --on-variable nonevent
+    echo ONEVENT $argv $nonevent
+end
+
+set -g nonevent bar
+set -e nonevent
+
+# CHECK: ONEVENT VARIABLE SET nonevent bar
+# CHECK: ONEVENT VARIABLE ERASE nonevent
+
+set -g --no-event nonevent 2
+set -e --no-event nonevent
+set -S nonevent
+
+set -g --no-event nonevent 3
+set -e nonevent
+# CHECK: ONEVENT VARIABLE ERASE nonevent
+
+set -g nonevent 4
+# CHECK: ONEVENT VARIABLE SET nonevent 4
+set -e --no-event nonevent
+
+set -l nonevent 4
+set -e nonevent
+# CHECK: ONEVENT VARIABLE SET nonevent
+# CHECK: ONEVENT VARIABLE ERASE nonevent
