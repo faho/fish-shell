@@ -1,3 +1,4 @@
+use crate::builtins::random;
 use crate::builtins::wait;
 use crate::ffi::{self, parser_t, wcharz_t, Repin, RustBuiltin};
 use crate::wchar::{self, wstr};
@@ -100,6 +101,7 @@ pub fn run_builtin(
 ) -> Option<c_int> {
     match builtin {
         RustBuiltin::Wait => wait::wait(parser, streams, args),
+        RustBuiltin::Random => random::random(parser, streams, args),
     }
 }
 
