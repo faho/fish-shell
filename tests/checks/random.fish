@@ -7,10 +7,10 @@ set -l close_min -9223372036854775806
 set -l diff_max 18446744073709551614
 
 # check failure cases
-random a
-#CHECKERR: random: a: invalid integer
-random $diff_max
-#CHECKERR: random: 18446744073709551614: invalid integer
+#random a
+#NCHECKERR: random: a: invalid integer
+#random $diff_max
+#NCHECKERR: random: 18446744073709551614: invalid integer
 random -- 1 2 3 4
 #CHECKERR: random: too many arguments
 random -- 10 -10

@@ -7,7 +7,7 @@ use crate::builtins::shared::{
 use crate::ffi::{parser_t};
 use crate::wchar::{widestrs, wstr};
 use crate::wgetopt::{wgetopter_t, wopt, woption, woption_argument_t};
-use crate::wutil::{self, format, fish_wcstoi, wgettext_fmt};
+use crate::wutil::{self, format, fish_wcstoi_radix_all, wgettext_fmt};
 use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
 
@@ -84,11 +84,11 @@ pub fn random(
         2 => {
             // start is first, end is second
             // TODO: wcstoi doesn't require that the string is fully used, but we should!
-            let mpid: Result<i64, wutil::Error> = fish_wcstoi(argv[i].chars());
+            let mpid: Result<i64, wutil::Error> = fish_wcstoi_radix_all(argv[i].chars(), None, true);
             // For some reason this error checking doesn't work?
             if mpid.is_err() {
                 streams.err.append(wgettext_fmt!(
-                    "%ls: '%ls' is not a valid start number\n",
+                    "%ls: %ls: invalid integer\n",
                     cmd,
                     argv[i],
                 ));
@@ -96,10 +96,10 @@ pub fn random(
             }
             start = mpid.unwrap();
             i += 1;
-            let mpid: Result<i64, wutil::Error> = fish_wcstoi(argv[i].chars());
+            let mpid: Result<i64, wutil::Error> = fish_wcstoi_radix_all(argv[i].chars(), None, true);
             if mpid.is_err() {
                 streams.err.append(wgettext_fmt!(
-                    "%ls: '%ls' is not a valid start number\n",
+                    "%ls: %ls: invalid integer\n",
                     cmd,
                     argv[i],
                 ));
@@ -110,10 +110,10 @@ pub fn random(
         3 => {
             // start, step, end
             // TODO: Is this repetition necessary?
-            let mpid: Result<i64, wutil::Error> = fish_wcstoi(argv[i].chars());
+            let mpid: Result<i64, wutil::Error> = fish_wcstoi_radix_all(argv[i].chars(), None, true);
             if mpid.is_err() {
                 streams.err.append(wgettext_fmt!(
-                    "%ls: '%ls' is not a valid start number\n",
+                    "%ls: %ls: invalid integer\n",
                     cmd,
                     argv[i],
                 ));
@@ -121,21 +121,40 @@ pub fn random(
             }
             start = mpid.unwrap();
             i += 1;
-            let mpid: Result<i64, wutil::Error> = fish_wcstoi(argv[i].chars());
-            if mpid.is_err() || mpid.unwrap() <= 0 {
+            let mpid: Result<i64, wutil::Error> = fish_wcstoi_radix_all(argv[i].chars(), None, true);
+            match mpid {
+                Err(wutil::Error::Overflow) => {
+                    // XXX For historical reasons - we have overflown. I'm quite sure this also happened
+                    // in C++
+                    streams.err.append(wgettext_fmt!(
+                        "%ls: range contains only one possible value\n",
+                        cmd,
+                    ));
+                    return Some(2);
+                },
+                Err(_) => {
+                    streams.err.append(wgettext_fmt!(
+                        "%ls: %ls: invalid integer\n",
+                        cmd,
+                        argv[i],
+                    ));
+                    return Some(2);
+                }
+                _ => {},
+            };
+            if mpid.unwrap() <= 0 {
                 streams.err.append(wgettext_fmt!(
-                    "%ls: '%ls' is not a valid start number\n",
+                    "%ls: STEP must be a positive integer\n",
                     cmd,
-                    argv[i],
                 ));
                 return Some(2);
             }
             step = mpid.unwrap();
             i += 1;
-            let mpid: Result<i64, wutil::Error> = fish_wcstoi(argv[i].chars());
+            let mpid: Result<i64, wutil::Error> = fish_wcstoi_radix_all(argv[i].chars(), None, true);
             if mpid.is_err() {
                 streams.err.append(wgettext_fmt!(
-                    "%ls: '%ls' is not a valid start number\n",
+                    "%ls: %ls: invalid integer\n",
                     cmd,
                     argv[i],
                 ));
@@ -145,7 +164,7 @@ pub fn random(
         },
         _ => {
             streams.err.append(wgettext_fmt!(
-                "%ls: Too many arguments\n",
+                "%ls: too many arguments\n",
                 cmd,
             ));
             return Some(1);
@@ -161,21 +180,27 @@ pub fn random(
         return Some(2);
     }
 
-    // TODO: There's got to be a nicer way
-    let mut real_end : i64 = 0;
-    if start >= 0 || end < 0 {
-        real_end = start + ((end - start) / step);
+    let real_end : i64 = if start >= 0 || end < 0 {
+        start + ((end - start) / step)
     } else {
         let a = start.abs();
-        real_end = ((end + a) / step) - a;
+        ((end + a) / step) - a
     };
 
     let a = if start < real_end { start } else { real_end };
     let b = if start > real_end { start } else { real_end };
 
-    if a == b + 1 {
+    if start.checked_add(step) == None {
         streams.err.append(wgettext_fmt!(
-            "%ls: END must be greater than START\n",
+            "%ls: range contains only one possible value\n",
+            cmd,
+        ));
+        return Some(2);
+    }
+
+    if a == b {
+        streams.err.append(wgettext_fmt!(
+            "%ls: range contains only one possible value\n",
             cmd,
         ));
         return Some(2);
@@ -185,14 +210,13 @@ pub fn random(
         Some(c) => {
             let rand = small_rng.gen_range(a..c);
 
-            let mut result = rand;
-            if (start >= 0) {
-                result = start + (rand - start) * step;
-            } else if (rand < 0) {
-                result = (rand - start) * step - start.abs();
+            let result = if start >= 0 {
+                start + (rand - start) * step
+            } else if rand < 0 {
+                (rand - start) * step - start.abs()
             } else {
-                result = (rand + start.abs()) * step - start.abs();
-            }
+                (rand + start.abs()) * step - start.abs()
+            };
             streams.out.append(format::printf::sprintf!("%d\n"L, result));
         },
         None => {
