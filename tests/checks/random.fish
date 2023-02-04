@@ -1,7 +1,7 @@
 #RUN: %fish %s
 # (note: rng uses a half-open interval so this needs to be one below 2 ^ 64)
-set -l max 9223372036854775806
-set -l close_max 9223372036854775805
+set -l max 9223372036854775807
+set -l close_max 9223372036854775806
 set -l min -9223372036854775807
 set -l close_min -9223372036854775806
 set -l diff_max 18446744073709551614

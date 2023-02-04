@@ -206,27 +206,16 @@ pub fn random(
         return Some(2);
     }
 
-    match b.checked_add(1) {
-        Some(c) => {
-            let rand = small_rng.gen_range(a..c);
+    let rand = small_rng.gen_range(a..=b);
 
-            let result = if start >= 0 {
-                start + (rand - start) * step
-            } else if rand < 0 {
-                (rand - start) * step - start.abs()
-            } else {
-                (rand + start.abs()) * step - start.abs()
-            };
-            streams.out.append(format::printf::sprintf!("%d\n"L, result));
-        },
-        None => {
-            streams.err.append(wgettext_fmt!(
-                "%ls: END is too large\n",
-                cmd,
-            ));
-            return Some(2);
-        }
-    }
+    let result = if start >= 0 {
+        start + (rand - start) * step
+    } else if rand < 0 {
+        (rand - start) * step - start.abs()
+    } else {
+        (rand + start.abs()) * step - start.abs()
+    };
+    streams.out.append(format::printf::sprintf!("%d\n"L, result));
 
     return Some(0);
 }
