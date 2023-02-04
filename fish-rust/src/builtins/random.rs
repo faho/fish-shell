@@ -63,8 +63,8 @@ pub fn random(
             return Some(2);
         }
 
-        let rand = small_rng.gen_range(0..argnum - 1);
-        streams.out.append(format::printf::sprintf!("%ls\n"L, argv[i + 1 + rand]));
+        let rand = small_rng.gen_range(1..argnum);
+        streams.out.append(format::printf::sprintf!("%ls\n"L, argv[i + rand]));
 
         return Some(0);
     }
