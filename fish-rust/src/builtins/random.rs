@@ -190,15 +190,7 @@ pub fn random(
     let a = if start < real_end { start } else { real_end };
     let b = if start > real_end { start } else { real_end };
 
-    if start.checked_add(step) == None {
-        streams.err.append(wgettext_fmt!(
-            "%ls: range contains only one possible value\n",
-            cmd,
-        ));
-        return Some(2);
-    }
-
-    if a == b {
+    if start.checked_add(step) == None || a == b {
         streams.err.append(wgettext_fmt!(
             "%ls: range contains only one possible value\n",
             cmd,
