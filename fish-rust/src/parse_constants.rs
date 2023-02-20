@@ -7,7 +7,6 @@ use crate::wchar_ffi::{wcharz, WCharFromFFI, WCharToFFI};
 use crate::wutil::{sprintf, wgettext_fmt};
 use cxx::{CxxWString, UniquePtr};
 use std::ops::{BitAnd, BitOrAssign};
-use widestring_suffix::widestrs;
 
 type SourceOffset = u32;
 
@@ -246,22 +245,21 @@ impl SourceRange {
 }
 
 impl From<ParseTokenType> for &'static wstr {
-    #[widestrs]
     fn from(token_type: ParseTokenType) -> Self {
         match token_type {
-            ParseTokenType::comment => "ParseTokenType::comment"L,
-            ParseTokenType::error => "ParseTokenType::error"L,
-            ParseTokenType::tokenizer_error => "ParseTokenType::tokenizer_error"L,
-            ParseTokenType::background => "ParseTokenType::background"L,
-            ParseTokenType::end => "ParseTokenType::end"L,
-            ParseTokenType::pipe => "ParseTokenType::pipe"L,
-            ParseTokenType::redirection => "ParseTokenType::redirection"L,
-            ParseTokenType::string => "ParseTokenType::string"L,
-            ParseTokenType::andand => "ParseTokenType::andand"L,
-            ParseTokenType::oror => "ParseTokenType::oror"L,
-            ParseTokenType::terminate => "ParseTokenType::terminate"L,
-            ParseTokenType::invalid => "ParseTokenType::invalid"L,
-            _ => "unknown token type"L,
+            ParseTokenType::comment => L!("ParseTokenType::comment"),
+            ParseTokenType::error => L!("ParseTokenType::error"),
+            ParseTokenType::tokenizer_error => L!("ParseTokenType::tokenizer_error"),
+            ParseTokenType::background => L!("ParseTokenType::background"),
+            ParseTokenType::end => L!("ParseTokenType::end"),
+            ParseTokenType::pipe => L!("ParseTokenType::pipe"),
+            ParseTokenType::redirection => L!("ParseTokenType::redirection"),
+            ParseTokenType::string => L!("ParseTokenType::string"),
+            ParseTokenType::andand => L!("ParseTokenType::andand"),
+            ParseTokenType::oror => L!("ParseTokenType::oror"),
+            ParseTokenType::terminate => L!("ParseTokenType::terminate"),
+            ParseTokenType::invalid => L!("ParseTokenType::invalid"),
+            _ => L!("unknown token type"),
         }
     }
 }
@@ -272,28 +270,27 @@ fn token_type_description(token_type: ParseTokenType) -> wcharz_t {
 }
 
 impl From<ParseKeyword> for &'static wstr {
-    #[widestrs]
     fn from(keyword: ParseKeyword) -> Self {
         match keyword {
-            ParseKeyword::kw_exclam => "!"L,
-            ParseKeyword::kw_and => "and"L,
-            ParseKeyword::kw_begin => "begin"L,
-            ParseKeyword::kw_builtin => "builtin"L,
-            ParseKeyword::kw_case => "case"L,
-            ParseKeyword::kw_command => "command"L,
-            ParseKeyword::kw_else => "else"L,
-            ParseKeyword::kw_end => "end"L,
-            ParseKeyword::kw_exec => "exec"L,
-            ParseKeyword::kw_for => "for"L,
-            ParseKeyword::kw_function => "function"L,
-            ParseKeyword::kw_if => "if"L,
-            ParseKeyword::kw_in => "in"L,
-            ParseKeyword::kw_not => "not"L,
-            ParseKeyword::kw_or => "or"L,
-            ParseKeyword::kw_switch => "switch"L,
-            ParseKeyword::kw_time => "time"L,
-            ParseKeyword::kw_while => "while"L,
-            _ => "unknown_keyword"L,
+            ParseKeyword::kw_exclam => L!("!"),
+            ParseKeyword::kw_and => L!("and"),
+            ParseKeyword::kw_begin => L!("begin"),
+            ParseKeyword::kw_builtin => L!("builtin"),
+            ParseKeyword::kw_case => L!("case"),
+            ParseKeyword::kw_command => L!("command"),
+            ParseKeyword::kw_else => L!("else"),
+            ParseKeyword::kw_end => L!("end"),
+            ParseKeyword::kw_exec => L!("exec"),
+            ParseKeyword::kw_for => L!("for"),
+            ParseKeyword::kw_function => L!("function"),
+            ParseKeyword::kw_if => L!("if"),
+            ParseKeyword::kw_in => L!("in"),
+            ParseKeyword::kw_not => L!("not"),
+            ParseKeyword::kw_or => L!("or"),
+            ParseKeyword::kw_switch => L!("switch"),
+            ParseKeyword::kw_time => L!("time"),
+            ParseKeyword::kw_while => L!("while"),
+            _ => L!("unknown_keyword"),
         }
     }
 }
@@ -556,27 +553,26 @@ impl ParseError {
     }
 }
 
-#[widestrs]
 pub fn token_type_user_presentable_description(
     type_: ParseTokenType,
     keyword: ParseKeyword,
 ) -> WString {
     if keyword != ParseKeyword::none {
-        return sprintf!("keyword: '%ls'"L, Into::<&'static wstr>::into(keyword));
+        return sprintf!(L!("keyword: '%ls'"), Into::<&'static wstr>::into(keyword));
     }
     match type_ {
-        ParseTokenType::string => "a string"L.to_owned(),
-        ParseTokenType::pipe => "a pipe"L.to_owned(),
-        ParseTokenType::redirection => "a redirection"L.to_owned(),
-        ParseTokenType::background => "a '&'"L.to_owned(),
-        ParseTokenType::andand => "'&&'"L.to_owned(),
-        ParseTokenType::oror => "'||'"L.to_owned(),
-        ParseTokenType::end => "end of the statement"L.to_owned(),
-        ParseTokenType::terminate => "end of the input"L.to_owned(),
-        ParseTokenType::error => "a parse error"L.to_owned(),
-        ParseTokenType::tokenizer_error => "an incomplete token"L.to_owned(),
-        ParseTokenType::comment => "a comment"L.to_owned(),
-        _ => sprintf!("a %ls"L, Into::<&'static wstr>::into(type_)),
+        ParseTokenType::string => L!("a string").to_owned(),
+        ParseTokenType::pipe => L!("a pipe").to_owned(),
+        ParseTokenType::redirection => L!("a redirection").to_owned(),
+        ParseTokenType::background => L!("a '&'").to_owned(),
+        ParseTokenType::andand => L!("'&&'").to_owned(),
+        ParseTokenType::oror => L!("'||'").to_owned(),
+        ParseTokenType::end => L!("end of the statement").to_owned(),
+        ParseTokenType::terminate => L!("end of the input").to_owned(),
+        ParseTokenType::error => L!("a parse error").to_owned(),
+        ParseTokenType::tokenizer_error => L!("an incomplete token").to_owned(),
+        ParseTokenType::comment => L!("a comment").to_owned(),
+        _ => sprintf!(L!("a %ls"), Into::<&'static wstr>::into(type_)),
     }
 }
 

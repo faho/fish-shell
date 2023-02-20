@@ -24,7 +24,7 @@ use crate::fd_readable_set::fd_readable_set_t;
 use crate::fds::{self, autoclose_pipes_t};
 use crate::ffi::{self as ffi, c_int};
 use crate::flog::FLOG;
-use crate::wchar::{widestrs, wstr, WString};
+use crate::wchar::{L, wstr, WString};
 use crate::wchar_ffi::wcharz;
 use nix::errno::Errno;
 use nix::unistd;
@@ -86,7 +86,6 @@ pub fn all_topics() -> [topic_t; 3] {
     [topic_t::sighupint, topic_t::sigchld, topic_t::internal_exit]
 }
 
-#[widestrs]
 impl generation_list_t {
     pub fn new() -> Self {
         Self::default()
@@ -223,14 +222,13 @@ impl binary_semaphore_t {
     }
 
     /// Release a waiting thread.
-    #[widestrs]
     pub fn post(&self) {
         // Beware, we are in a signal handler.
         if self.sem_ok_ {
             let res = unsafe { libc::sem_post(self.sem_.get()) };
             // sem_post is non-interruptible.
             if res < 0 {
-                self.die("sem_post"L);
+                self.die(L!("sem_post"));
             }
         } else {
             // Write exactly one byte.
@@ -245,14 +243,13 @@ impl binary_semaphore_t {
                 break;
             }
             if !success {
-                self.die("write"L);
+                self.die(L!("write"));
             }
         }
     }
 
     /// Wait for a post.
     /// This loops on EINTR.
-    #[widestrs]
     pub fn wait(&self) {
         if self.sem_ok_ {
             let mut res;
@@ -265,7 +262,7 @@ impl binary_semaphore_t {
             }
             // Other errors here are very unexpected.
             if res < 0 {
-                self.die("sem_wait"L);
+                self.die(L!("sem_wait"));
             }
         } else {
             let fd = self.pipes_.read.fd();
@@ -286,7 +283,7 @@ impl binary_semaphore_t {
                 if amt.is_err()
                     && (amt.err() != Some(Errno::EINTR) && amt.err() != Some(Errno::EAGAIN))
                 {
-                    self.die("read"L);
+                    self.die(L!("read"));
                 }
             }
         }

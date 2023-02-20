@@ -6,7 +6,7 @@ use crate::builtins::shared::{
 };
 use crate::ffi::{job_t, parser_t, proc_wait_any, wait_handle_ref_t, Repin};
 use crate::signal::sigchecker_t;
-use crate::wchar::{widestrs, wstr};
+use crate::wchar::{L, wstr};
 use crate::wgetopt::{wgetopter_t, wopt, woption, woption_argument_t};
 use crate::wutil::{self, fish_wcstoi, wgettext_fmt};
 
@@ -150,7 +150,6 @@ fn wait_for_completion(
     }
 }
 
-#[widestrs]
 pub fn wait(
     parser: &mut parser_t,
     streams: &mut io_streams_t,
@@ -162,10 +161,10 @@ pub fn wait(
     let mut print_help = false;
     let print_hints = false;
 
-    const shortopts: &wstr = ":nh"L;
+    const shortopts: &wstr = L!(":nh");
     const longopts: &[woption] = &[
-        wopt("any"L, woption_argument_t::no_argument, 'n'),
-        wopt("help"L, woption_argument_t::no_argument, 'h'),
+        wopt(L!("any"), woption_argument_t::no_argument, 'n'),
+        wopt(L!("help"), woption_argument_t::no_argument, 'h'),
     ];
 
     let mut w = wgetopter_t::new(shortopts, longopts, argv);

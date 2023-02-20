@@ -1,13 +1,12 @@
 //! Flags to enable upcoming features
 
 use crate::ffi::wcharz_t;
-use crate::wchar::wstr;
+use crate::wchar::{L, wstr};
 use crate::wchar_ffi::WCharToFFI;
 use std::array;
 use std::cell::UnsafeCell;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
-use widestring_suffix::widestrs;
 
 #[cxx::bridge]
 mod future_feature_flags_ffi {
@@ -98,37 +97,36 @@ impl From<&FeatureMetadata> for feature_metadata_t {
 }
 
 /// The metadata, indexed by flag.
-#[widestrs]
 const metadata: [FeatureMetadata; 4] = [
     FeatureMetadata {
         flag: FeatureFlag::stderr_nocaret,
-        name: "stderr-nocaret"L,
-        groups: "3.0"L,
-        description: "^ no longer redirects stderr (historical, can no longer be changed)"L,
+        name: L!("stderr-nocaret"),
+        groups: L!("3.0"),
+        description: L!("^ no longer redirects stderr (historical, can no longer be changed)"),
         default_value: true,
         read_only: true,
     },
     FeatureMetadata {
         flag: FeatureFlag::qmark_noglob,
-        name: "qmark-noglob"L,
-        groups: "3.0"L,
-        description: "? no longer globs"L,
+        name: L!("qmark-noglob"),
+        groups: L!("3.0"),
+        description: L!("? no longer globs"),
         default_value: false,
         read_only: false,
     },
     FeatureMetadata {
         flag: FeatureFlag::string_replace_backslash,
-        name: "regex-easyesc"L,
-        groups: "3.1"L,
-        description: "string replace -r needs fewer \\'s"L,
+        name: L!("regex-easyesc"),
+        groups: L!("3.1"),
+        description: L!("string replace -r needs fewer \\'s"),
         default_value: true,
         read_only: false,
     },
     FeatureMetadata {
         flag: FeatureFlag::ampersand_nobg_in_token,
-        name: "ampersand-nobg-in-token"L,
-        groups: "3.4"L,
-        description: "& only backgrounds if followed by a separator"L,
+        name: L!("ampersand-nobg-in-token"),
+        groups: L!("3.4"),
+        description: L!("& only backgrounds if followed by a separator"),
         default_value: true,
         read_only: false,
     },
@@ -165,10 +163,9 @@ impl Features {
     /// Feature names or group names may be prefixed with "no-" to disable them.
     /// The special group name "all" may be used for those who like to live on the edge.
     /// Unknown features are silently ignored.
-    #[widestrs]
     pub fn set_from_string<'a>(&mut self, str: impl Into<&'a wstr>) {
         let str: &wstr = str.into();
-        let whitespace = "\t\n\0x0B\0x0C\r "L.as_char_slice();
+        let whitespace = L!("\t\n\0x0B\0x0C\r ").as_char_slice();
         for entry in str.as_char_slice().split(|c| *c == ',') {
             if entry.is_empty() {
                 continue;
@@ -180,7 +177,7 @@ impl Features {
                 &entry[..entry.len() - entry.iter().take_while(|c| whitespace.contains(c)).count()];
 
             // A "no-" prefix inverts the sense.
-            let (name, value) = match entry.strip_prefix("no-"L.as_char_slice()) {
+            let (name, value) = match entry.strip_prefix(L!("no-").as_char_slice()) {
                 Some(suffix) => (suffix, false),
                 None => (entry, true),
             };
@@ -197,7 +194,7 @@ impl Features {
                 }
             } else {
                 for md in &metadata {
-                    if md.groups == name || name == "all"L {
+                    if md.groups == name || name == L!("all") {
                         if !md.read_only {
                             self.set(md.flag, value);
                         }
@@ -230,12 +227,11 @@ pub fn feature_metadata() -> [feature_metadata_t; metadata.len()] {
 }
 
 #[test]
-#[widestrs]
 fn test_feature_flags() {
     let mut f = Features::new();
-    f.set_from_string("stderr-nocaret,nonsense"L);
+    f.set_from_string(L!("stderr-nocaret,nonsense"));
     assert!(f.test(FeatureFlag::stderr_nocaret));
-    f.set_from_string("stderr-nocaret,no-stderr-nocaret,nonsense"L);
+    f.set_from_string(L!("stderr-nocaret,no-stderr-nocaret,nonsense"));
     assert!(f.test(FeatureFlag::stderr_nocaret));
 
     // Ensure every metadata is represented once.
@@ -249,6 +245,6 @@ fn test_feature_flags() {
 
     assert_eq!(
         metadata[FeatureFlag::stderr_nocaret.repr as usize].name,
-        "stderr-nocaret"L
+        L!("stderr-nocaret")
     );
 }

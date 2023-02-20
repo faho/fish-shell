@@ -21,7 +21,7 @@
 // OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use super::printf::{sprintf, Printf};
-use crate::wchar::{widestrs, WString, L};
+use crate::wchar::{WString, L};
 
 fn check_fmt<T: Printf>(nfmt: &str, arg: T, expected: &str) {
     let fmt: WString = nfmt.into();
@@ -92,10 +92,9 @@ fn test_str() {
 }
 
 #[test]
-#[widestrs]
 fn test_str_concat() {
-    assert_eq!(sprintf!("%s-%ls"L, "abc", "def"L), "abc-def"L);
-    assert_eq!(sprintf!("%s-%ls"L, "abc", "def"L), "abc-def"L);
+    assert_eq!(sprintf!(L!("%s-%ls"), "abc", L!("def")), L!("abc-def"));
+    assert_eq!(sprintf!(L!("%s-%ls"), "abc", L!("def")), L!("abc-def"));
 }
 
 #[test]

@@ -1,12 +1,11 @@
 use crate::ffi::{get_flog_file_fd, parse_util_unescape_wildcards, wildcard_match};
-use crate::wchar::{widestrs, wstr, WString};
+use crate::wchar::{wstr, WString};
 use crate::wchar_ffi::WCharToFFI;
 use std::io::Write;
 use std::os::unix::io::{FromRawFd, IntoRawFd, RawFd};
 use std::sync::atomic::Ordering;
 
 #[rustfmt::skip::macros(category)]
-#[widestrs]
 pub mod categories {
     use super::wstr;
     use std::sync::atomic::AtomicBool;
@@ -71,68 +70,68 @@ pub mod categories {
     }
 
     categories!(
-        (error, "error"L, "Serious unexpected errors (on by default)"L, true);
+        (error, widestring::utf32str!("error"), widestring::utf32str!("Serious unexpected errors (on by default)"), true);
 
-        (debug, "debug"L, "Debugging aid (on by default)"L, true);
+        (debug, widestring::utf32str!("debug"), widestring::utf32str!("Debugging aid (on by default)"), true);
 
-        (warning, "warning"L, "Warnings (on by default)"L, true);
+        (warning, widestring::utf32str!("warning"), widestring::utf32str!("Warnings (on by default)"), true);
 
-        (warning_path, "warning-path"L, "Warnings about unusable paths for config/history (on by default)"L, true);
+        (warning_path, widestring::utf32str!("warning-path"), widestring::utf32str!("Warnings about unusable paths for config/history (on by default)"), true);
 
-        (config, "config"L, "Finding and reading configuration"L);
+        (config, widestring::utf32str!("config"), widestring::utf32str!("Finding and reading configuration"));
 
-        (event, "event"L, "Firing events"L);
+        (event, widestring::utf32str!("event"), widestring::utf32str!("Firing events"));
 
-        (exec, "exec"L, "Errors reported by exec (on by default)"L, true);
+        (exec, widestring::utf32str!("exec"), widestring::utf32str!("Errors reported by exec (on by default)"), true);
 
-        (exec_job_status, "exec-job-status"L, "Jobs changing status"L);
+        (exec_job_status, widestring::utf32str!("exec-job-status"), widestring::utf32str!("Jobs changing status"));
 
-        (exec_job_exec, "exec-job-exec"L, "Jobs being executed"L);
+        (exec_job_exec, widestring::utf32str!("exec-job-exec"), widestring::utf32str!("Jobs being executed"));
 
-        (exec_fork, "exec-fork"L, "Calls to fork()"L);
+        (exec_fork, widestring::utf32str!("exec-fork"), widestring::utf32str!("Calls to fork()"));
 
-        (output_invalid, "output-invalid"L, "Trying to print invalid output"L);
-        (ast_construction, "ast-construction"L, "Parsing fish AST"L);
+        (output_invalid, widestring::utf32str!("output-invalid"), widestring::utf32str!("Trying to print invalid output"));
+        (ast_construction, widestring::utf32str!("ast-construction"), widestring::utf32str!("Parsing fish AST"));
 
-        (proc_job_run, "proc-job-run"L, "Jobs getting started or continued"L);
+        (proc_job_run, widestring::utf32str!("proc-job-run"), widestring::utf32str!("Jobs getting started or continued"));
 
-        (proc_termowner, "proc-termowner"L, "Terminal ownership events"L);
+        (proc_termowner, widestring::utf32str!("proc-termowner"), widestring::utf32str!("Terminal ownership events"));
 
-        (proc_internal_proc, "proc-internal-proc"L, "Internal (non-forked) process events"L);
+        (proc_internal_proc, widestring::utf32str!("proc-internal-proc"), widestring::utf32str!("Internal (non-forked) process events"));
 
-        (proc_reap_internal, "proc-reap-internal"L, "Reaping internal (non-forked) processes"L);
+        (proc_reap_internal, widestring::utf32str!("proc-reap-internal"), widestring::utf32str!("Reaping internal (non-forked) processes"));
 
-        (proc_reap_external, "proc-reap-external"L, "Reaping external (forked) processes"L);
-        (proc_pgroup, "proc-pgroup"L, "Process groups"L);
+        (proc_reap_external, widestring::utf32str!("proc-reap-external"), widestring::utf32str!("Reaping external (forked) processes"));
+        (proc_pgroup, widestring::utf32str!("proc-pgroup"), widestring::utf32str!("Process groups"));
 
-        (env_locale, "env-locale"L, "Changes to locale variables"L);
+        (env_locale, widestring::utf32str!("env-locale"), widestring::utf32str!("Changes to locale variables"));
 
-        (env_export, "env-export"L, "Changes to exported variables"L);
+        (env_export, widestring::utf32str!("env-export"), widestring::utf32str!("Changes to exported variables"));
 
-        (env_dispatch, "env-dispatch"L, "Reacting to variables"L);
+        (env_dispatch, widestring::utf32str!("env-dispatch"), widestring::utf32str!("Reacting to variables"));
 
-        (uvar_file, "uvar-file"L, "Writing/reading the universal variable store"L);
-        (uvar_notifier, "uvar-notifier"L, "Notifications about universal variable changes"L);
+        (uvar_file, widestring::utf32str!("uvar-file"), widestring::utf32str!("Writing/reading the universal variable store"));
+        (uvar_notifier, widestring::utf32str!("uvar-notifier"), widestring::utf32str!("Notifications about universal variable changes"));
 
-        (topic_monitor, "topic-monitor"L, "Internal details of the topic monitor"L);
-        (char_encoding, "char-encoding"L, "Character encoding issues"L);
+        (topic_monitor, widestring::utf32str!("topic-monitor"), widestring::utf32str!("Internal details of the topic monitor"));
+        (char_encoding, widestring::utf32str!("char-encoding"), widestring::utf32str!("Character encoding issues"));
 
-        (history, "history"L, "Command history events"L);
-        (history_file, "history-file"L, "Reading/Writing the history file"L);
+        (history, widestring::utf32str!("history"), widestring::utf32str!("Command history events"));
+        (history_file, widestring::utf32str!("history-file"), widestring::utf32str!("Reading/Writing the history file"));
 
-        (profile_history, "profile-history"L, "History performance measurements"L);
+        (profile_history, widestring::utf32str!("profile-history"), widestring::utf32str!("History performance measurements"));
 
-        (iothread, "iothread"L, "Background IO thread events"L);
-        (fd_monitor, "fd-monitor"L, "FD monitor events"L);
+        (iothread, widestring::utf32str!("iothread"), widestring::utf32str!("Background IO thread events"));
+        (fd_monitor, widestring::utf32str!("fd-monitor"), widestring::utf32str!("FD monitor events"));
 
-        (term_support, "term-support"L, "Terminal feature detection"L);
+        (term_support, widestring::utf32str!("term-support"), widestring::utf32str!("Terminal feature detection"));
 
-        (reader, "reader"L, "The interactive reader/input system"L);
-        (reader_render, "reader-render"L, "Rendering the command line"L);
-        (complete, "complete"L, "The completion system"L);
-        (path, "path"L, "Searching/using paths"L);
+        (reader, widestring::utf32str!("reader"), widestring::utf32str!("The interactive reader/input system"));
+        (reader_render, widestring::utf32str!("reader-render"), widestring::utf32str!("Rendering the command line"));
+        (complete, widestring::utf32str!("complete"), widestring::utf32str!("The completion system"));
+        (path, widestring::utf32str!("path"), widestring::utf32str!("Searching/using paths"));
 
-        (screen, "screen"L, "Screen repaints"L);
+        (screen, widestring::utf32str!("screen"), widestring::utf32str!("Screen repaints"));
     );
 }
 

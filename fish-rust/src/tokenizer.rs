@@ -11,7 +11,6 @@ use crate::wutil::wgettext;
 use cxx::{CxxWString, SharedPtr, UniquePtr};
 use libc::{c_int, STDIN_FILENO, STDOUT_FILENO};
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not};
-use widestring_suffix::widestrs;
 
 #[cxx::bridge]
 mod tokenizer_ffi {
@@ -201,10 +200,9 @@ fn tokenizer_get_error_message(err: TokenizerError) -> UniquePtr<CxxWString> {
 }
 
 impl From<TokenizerError> for &'static wstr {
-    #[widestrs]
     fn from(err: TokenizerError) -> Self {
         match err {
-            TokenizerError::none => ""L,
+            TokenizerError::none => L!(""),
             TokenizerError::unterminated_quote => {
                 wgettext!("Unexpected end of string, quotes are not balanced")
             }

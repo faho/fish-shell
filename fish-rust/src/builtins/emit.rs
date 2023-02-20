@@ -1,14 +1,13 @@
 use libc::c_int;
-use widestring_suffix::widestrs;
 
 use super::shared::{
     builtin_print_help, io_streams_t, HelpOnlyCmdOpts, STATUS_CMD_OK, STATUS_INVALID_ARGS,
 };
 use crate::ffi::{self, parser_t, Repin};
 use crate::wchar_ffi::{wstr, W0String, WCharToFFI};
+use crate::wchar::L;
 use crate::wutil::format::printf::sprintf;
 
-#[widestrs]
 pub fn emit(
     parser: &mut parser_t,
     streams: &mut io_streams_t,
@@ -28,7 +27,7 @@ pub fn emit(
     }
 
     let Some(event_name) = argv.get(opts.optind) else {
-        streams.err.append(&sprintf!("%ls: expected event name\n"L, cmd));
+        streams.err.append(&sprintf!(L!("%ls: expected event name\n"), cmd));
         return STATUS_INVALID_ARGS;
     };
 
