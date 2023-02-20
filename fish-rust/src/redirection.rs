@@ -5,7 +5,7 @@ use crate::wchar_ffi::{wcharz_t, WCharToFFI, WString};
 use crate::wutil::fish_wcstoi;
 use cxx::{CxxVector, CxxWString, SharedPtr, UniquePtr};
 use libc::{c_int, O_APPEND, O_CREAT, O_EXCL, O_RDONLY, O_TRUNC, O_WRONLY};
-use std::os::fd::RawFd;
+use std::os::unix::io::RawFd;
 
 #[cxx::bridge]
 mod redirection_ffi {
