@@ -26,10 +26,12 @@ pub fn emit(
         return STATUS_CMD_OK;
     }
 
-    let Some(event_name) = argv.get(opts.optind) else {
+    if argv.get(opts.optind).is_none() {
         streams.err.append(&sprintf!(L!("%ls: expected event name\n"), cmd));
         return STATUS_INVALID_ARGS;
     };
+
+    let event_name = argv.get(opts.optind)?;
 
     let event_args: Vec<W0String> = argv[opts.optind + 1..]
         .iter()

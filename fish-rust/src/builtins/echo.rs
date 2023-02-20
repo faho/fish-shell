@@ -170,11 +170,14 @@ pub fn echo(
                 continue;
             }
 
-            let Some(next_char) = chars.peek() else {
-                // Incomplete escape sequence is echoed verbatim
-                out.push('\\');
-                break;
-            };
+            let next_char;
+            match chars.peek() {
+                Some(n) => next_char = n,
+                _ => {
+                    out.push('\\');
+                    break;
+                }
+            }
 
             // Most escapes consume one character in addition to the backslash; the numeric
             // sequences may consume more, while an unrecognized escape sequence consumes none.
