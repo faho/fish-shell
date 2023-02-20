@@ -19,7 +19,7 @@ jobs:
     - name: SetupRust
       uses: ATiltedTree/setup-rust@v1
       with:
-        rust-version: 1.66
+        rust-version: 1.59
     - name: Install deps
       run: |
         sudo apt install gettext libncurses5-dev libpcre2-dev python3-pip tmux
