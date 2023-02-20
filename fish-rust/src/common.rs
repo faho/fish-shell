@@ -1,6 +1,6 @@
 use crate::ffi;
 use crate::wchar_ffi::{wstr, WCharFromFFI, WString};
-use std::ffi::c_uint;
+use std::os::raw::c_uint;
 use std::mem;
 
 /// A scoped manager to save the current value of some variable, and optionally set it to a new

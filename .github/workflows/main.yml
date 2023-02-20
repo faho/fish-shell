@@ -151,7 +151,7 @@ jobs:
     - name: SetupRust
       uses: ATiltedTree/setup-rust@v1
       with:
-        rust-version: 1.65
+        rust-version: 1.62
     - name: Install deps
       run: |
         sudo pip3 install pexpect
