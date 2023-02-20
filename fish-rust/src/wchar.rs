@@ -20,17 +20,6 @@ macro_rules! L {
 }
 pub(crate) use L;
 
-/// A proc-macro for creating wide string literals using an L *suffix*.
-///  Example usage:
-/// ```
-///  #[widestrs]
-///  pub fn func() {
-///     let s = "hello"L; // type &'static wstr
-///  }
-/// ```
-/// Note: the resulting string is NOT nul-terminated.
-pub use widestring_suffix::widestrs;
-
 /// Pull in our extensions.
 pub use crate::wchar_ext::{CharPrefixSuffix, WExt};
 
