@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sys/utsname.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -362,6 +363,11 @@ void env_init(const struct config_paths_t *paths, bool do_uvars, bool default_pa
 
     // Set fish_bind_mode to "default".
     vars.set_one(FISH_BIND_MODE_VAR, ENV_GLOBAL, DEFAULT_BIND_MODE);
+
+    utsname info;
+    uname(&info);
+    vars.set_one(L"OSTYPE", ENV_GLOBAL, str2wcstring(info.sysname));
+
 
     // Allow changes to variables to produce events.
     env_dispatch_init_ffi(/* vars */);
