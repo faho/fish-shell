@@ -37,7 +37,7 @@ bind --user --preset | string match -v '*backward-delete-char'
 # CHECK: bind --preset \cn down-line
 # CHECK: bind --preset \cb backward-char
 # CHECK: bind --preset \cf forward-char
-# CHECK: bind -M bind_mode \cx true
+# CHECK: bind --user -M bind_mode \cx true
 # CHECK: bind --preset '' self-insert
 # CHECK: bind --preset \n execute
 # CHECK: bind --preset \r execute
@@ -55,7 +55,7 @@ bind --user --preset | string match -v '*backward-delete-char'
 # CHECK: bind --preset \cn down-line
 # CHECK: bind --preset \cb backward-char
 # CHECK: bind --preset \cf forward-char
-# CHECK: bind -M bind_mode \cx true
+# CHECK: bind --user -M bind_mode \cx true
 
 # Preset only
 bind --preset | string match -v '*backward-delete-char'
@@ -76,10 +76,12 @@ bind --preset | string match -v '*backward-delete-char'
 # CHECK: bind --preset \cn down-line
 # CHECK: bind --preset \cb backward-char
 # CHECK: bind --preset \cf forward-char
+# (we print this note only when no --user bindings are printed)
+# CHECK: # Note: Remove the '--preset' to make a custom binding that overrides a preset one
 
 # User only
 bind --user | string match -v '*backward-delete-char'
-# CHECK: bind -M bind_mode \cx true
+# CHECK: bind --user -M bind_mode \cx true
 
 # Adding bindings
 bind \t 'echo banana'
@@ -101,8 +103,8 @@ bind | string match -v '*backward-delete-char'
 # CHECK: bind --preset \cn down-line
 # CHECK: bind --preset \cb backward-char
 # CHECK: bind --preset \cf forward-char
-# CHECK: bind -M bind_mode \cx true
-# CHECK: bind \t 'echo banana'
+# CHECK: bind --user -M bind_mode \cx true
+# CHECK: bind --user \t 'echo banana'
 
 # Erasing bindings
 bind --erase \t

@@ -54,7 +54,7 @@ class builtin_bind_t {
     /// lock again.
     acquired_lock<input_mapping_set_t> input_mappings_;
 
-    void list(const wchar_t *bind_mode, bool user, parser_t &parser, io_streams_t &streams);
+    bool list(const wchar_t *bind_mode, bool user, parser_t &parser, io_streams_t &streams);
     void key_names(bool all, io_streams_t &streams);
     void function_names(io_streams_t &streams);
     bool add(const wcstring &seq, const wchar_t *const *cmds, size_t cmds_len, const wchar_t *mode,
@@ -87,7 +87,10 @@ bool builtin_bind_t::list_one(const wcstring &seq, const wcstring &bind_mode, bo
     // Append the mode flags if applicable.
     if (!user) {
         out.append(L" --preset");
+    } else {
+        out.append(L" --user");
     }
+
     if (bind_mode != DEFAULT_BIND_MODE) {
         out.append(L" -M ");
         out.append(escape_string(bind_mode));
@@ -143,17 +146,21 @@ bool builtin_bind_t::list_one(const wcstring &seq, const wcstring &bind_mode, bo
 }
 
 /// List all current key bindings.
-void builtin_bind_t::list(const wchar_t *bind_mode, bool user, parser_t &parser,
+bool builtin_bind_t::list(const wchar_t *bind_mode, bool user, parser_t &parser,
                           io_streams_t &streams) {
     const std::vector<input_mapping_name_t> lst = input_mappings_->get_names(user);
+
+    bool found = false;
 
     for (const input_mapping_name_t &binding : lst) {
         if (bind_mode && bind_mode != binding.mode) {
             continue;
         }
 
+        found = true;
         list_one(binding.seq, binding.mode, user, parser, streams);
     }
+    return found;
 }
 
 /// Print terminfo key binding names to string buffer used for standard output.
@@ -280,11 +287,17 @@ bool builtin_bind_t::insert(int optind, int argc, const wchar_t **argv, parser_t
     if (arg_count == 0) {
         // We don't overload this with user and def because we want them to be grouped.
         // First the presets, then the users (because of scrolling).
+        bool printed_user = false;
         if (opts->preset) {
             list(opts->bind_mode_given ? opts->bind_mode : nullptr, false, parser, streams);
         }
         if (opts->user) {
-            list(opts->bind_mode_given ? opts->bind_mode : nullptr, true, parser, streams);
+            if (list(opts->bind_mode_given ? opts->bind_mode : nullptr, true, parser, streams)) {
+                printed_user = true;
+            }
+        }
+        if (opts->preset && !printed_user) {
+            streams.out.append(_(L"# Note: Remove the '--preset' to make a custom binding that overrides a preset one\n"));
         }
     } else if (arg_count == 1) {
         wcstring seq;
@@ -309,6 +322,8 @@ bool builtin_bind_t::insert(int optind, int argc, const wchar_t **argv, parser_t
                 }
             }
             return true;
+        } else if (!opts->user) {
+            streams.out.append(_(L"# Note: Remove the '--preset' to make a custom binding that overrides a preset one\n"));
         }
     } else {
         // Actually insert!
