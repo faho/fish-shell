@@ -301,6 +301,14 @@ static bool wildcard_test_flags_then_complete(const wcstring &filepath, const wc
                                               completion_receiver_t *out, bool known_dir) {
     const bool executables_only = expand_flags & expand_flag::executables_only;
     const bool need_directory = expand_flags & expand_flag::directories_only;
+
+    // WSL: If we want executables, dlls don't count.
+    // Do this first so we can skip all those System32 dlls.
+    if (executables_only && is_windows_subsystem_for_linux() &&
+        string_suffixes_string_case_insensitive(L".dll", filename)) {
+        return false;
+    }
+
     // Fast path: If we need directories, and we already know it is one,
     // and we don't need to do anything else, just return it.
     // This is a common case for cd completions, and removes the `stat` entirely in case the system
@@ -342,11 +350,6 @@ static bool wildcard_test_flags_then_complete(const wcstring &filepath, const wc
     }
 
     if (executables_only && (!is_executable || waccess(filepath, X_OK) != 0)) {
-        return false;
-    }
-
-    if (executables_only && is_windows_subsystem_for_linux() &&
-        string_suffixes_string_case_insensitive(L".dll", filename)) {
         return false;
     }
 
