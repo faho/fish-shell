@@ -1690,6 +1690,11 @@ pub fn is_windows_subsystem_for_linux() -> bool {
             std::mem::transmute(&info.release[..])
         };
 
+        // WSL2 looks like `5.5.12-microsoft-standard-WSL2`
+        if slice_contains_slice(release, b"microsoft") && slice_contains_slice(release, b"WSL2") {
+            return true;
+        }
+
         // Sample utsname.release under WSL, testing for something like `4.4.0-17763-Microsoft`
         if !slice_contains_slice(release, b"Microsoft") {
             return false;
