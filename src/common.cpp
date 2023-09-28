@@ -133,6 +133,11 @@ bool is_windows_subsystem_for_linux() {
         utsname info;
         uname(&info);
 
+        // WSL2 looks like `5.5.12-microsoft-standard-WSL2`
+        if (std::strstr(info.release, "microsoft") != nullptr && std::strstr(info.release, "WSL2") != nullptr) {
+            return true;
+        }
+
         // Sample utsname.release under WSL, testing for something like `4.4.0-17763-Microsoft`
         if (std::strstr(info.release, "Microsoft") != nullptr) {
             const char *dash = std::strchr(info.release, '-');
