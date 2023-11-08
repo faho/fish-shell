@@ -426,17 +426,15 @@ mod test_expressions {
                 }
 
                 // Parse another expression.
-                let expr = self.parse_unary_expression(idx, end);
-                if expr.is_none() {
+                let Some(expr) = self.parse_unary_expression(idx, end) else {
                     self.add_error(idx, sprintf!("Missing argument at index %u", idx + 1));
                     if !first {
                         // Clean up the dangling combiner, since it never got its right hand expression.
                         combiners.pop();
                     }
                     break;
-                }
+                };
                 // Go to the end of this expression.
-                let expr = expr.unwrap();
                 idx = expr.range().end;
                 subjects.push(expr);
                 first = false;
@@ -605,27 +603,30 @@ mod test_expressions {
             end: usize,
         ) -> Option<Box<dyn Expression>> {
             assert!(end - start == 3);
-            let mut result = None;
+            let result;
             let center_token = token_for_string(self.arg(start + 1));
             if center_token.flags & BINARY_PRIMARY != 0 {
                 result = self.parse_binary_primary(start, end);
             } else if center_token.tok == Token::combine_and
                 || center_token.tok == Token::combine_or
             {
-                let left = self.parse_unary_expression(start, start + 1);
-                let right = self.parse_unary_expression(start + 2, start + 3);
-                if left.is_some() && right.is_some() {
-                    // Transfer ownership to the vector of subjects.
-                    let combiners = vec![center_token.tok];
-                    let subjects = vec![left.unwrap(), right.unwrap()];
-                    result = CombiningExpression {
-                        subjects,
-                        combiners,
-                        token: center_token.tok,
-                        range: start..end,
-                    }
-                    .into_some_box()
+                let Some(left) = self.parse_unary_expression(start, start + 1) else {
+                    return None;
+                };
+                let Some(right) = self.parse_unary_expression(start + 2, start + 3) else {
+                    return None;
+                };
+
+                // Transfer ownership to the vector of subjects.
+                let combiners = vec![center_token.tok];
+                let subjects = vec![left, right];
+                result = CombiningExpression {
+                    subjects,
+                    combiners,
+                    token: center_token.tok,
+                    range: start..end,
                 }
+                .into_some_box()
             } else {
                 result = self.parse_unary_expression(start, end);
             }
@@ -775,33 +776,30 @@ mod test_expressions {
     fn parse_number(arg: &wstr, number: &mut Number, errors: &mut Vec<WString>) -> bool {
         let floating = parse_double(arg);
         let integral: Result<i64, Error> = fish_wcstol(arg);
-        let got_int = integral.is_ok();
-        if got_int {
-            // Here the value is just an integer; ignore the floating point parse because it may be
-            // invalid (e.g. not a representable integer).
-            *number = Number::new(integral.unwrap(), 0.0);
-            true
-        } else if floating.is_ok()
-            && integral.unwrap_err() != Error::Overflow
-            && floating.unwrap().is_finite()
-        {
-            // Here we parsed an (in range) floating point value that could not be parsed as an integer.
-            // Break the floating point value into base and delta. Ensure that base is <= the floating
-            // point value.
-            //
-            // Note that a non-finite number like infinity or NaN doesn't work for us, so we checked
-            // above.
-            let floating = floating.unwrap();
-            let intpart = floating.floor();
-            let delta = floating - intpart;
-            *number = Number::new(intpart as i64, delta);
-            true
-        } else {
-            // We could not parse a float or an int.
-            // Check for special fish_wcsto* value or show standard EINVAL/ERANGE error.
-            // TODO: the C++ here was pretty confusing. In particular we used an errno of -1 to mean
-            // "invalid char" but the input string may be something like "inf".
-            if integral == Err(Error::InvalidChar) && floating.is_err() {
+        match (integral, floating) {
+            (Ok(n), _) => {
+                // Here the value is just an integer; ignore the floating point parse because it may be
+                // invalid (e.g. not a representable integer).
+                *number = Number::new(n, 0.0);
+                return true;
+            }
+            (Err(n), Ok(f)) if n != Error::Overflow && f.is_finite() => {
+                // Here we parsed an (in range) floating point value that could not be parsed as an integer.
+                // Break the floating point value into base and delta. Ensure that base is <= the floating
+                // point value.
+                //
+                // Note that a non-finite number like infinity or NaN doesn't work for us, so we checked
+                // above.
+                let intpart = f.floor();
+                let delta = f - intpart;
+                *number = Number::new(intpart as i64, delta);
+                return true;
+            }
+            (Err(Error::InvalidChar), Err(_)) => {
+                // We could not parse a float or an int.
+                // Check for special fish_wcsto* value or show standard EINVAL/ERANGE error.
+                // TODO: the C++ here was pretty confusing. In particular we used an errno of -1 to mean
+                // "invalid char" but the input string may be something like "inf".
                 // Historically fish has printed a special message if a prefix of the invalid string was an integer.
                 // Compute that now.
                 let options = Options {
@@ -818,18 +816,22 @@ mod test_expressions {
                 } else {
                     errors.push(wgettext_fmt!("Argument is not a number: '%ls'", arg));
                 }
-            } else if floating.is_ok() && floating.unwrap().is_nan() {
+            }
+            (_, Ok(f)) if f.is_nan() => {
                 // NaN is an error as far as we're concerned.
                 errors.push(wgettext!("Not a number").to_owned());
-            } else if floating.is_ok() && floating.unwrap().is_infinite() {
+            }
+            (_, Ok(f)) if f.is_infinite() => {
                 errors.push(wgettext!("Number is infinite").to_owned());
-            } else if integral == Err(Error::Overflow) {
+            }
+            (Err(Error::Overflow), _) => {
                 errors.push(wgettext_fmt!("Result too large: %ls", arg));
-            } else {
+            }
+            (_, _) => {
                 errors.push(wgettext_fmt!("Invalid number: %ls", arg));
             }
-            false
         }
+        false
     }
 
     fn binary_primary_evaluate(
