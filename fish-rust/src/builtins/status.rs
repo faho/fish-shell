@@ -63,6 +63,7 @@ enum StatusCmd {
     STATUS_STACK_TRACE,
     STATUS_TEST_FEATURE,
     STATUS_CURRENT_COMMANDLINE,
+    STATUS_UNIX_TIME,
 }
 
 str_enum!(
@@ -93,6 +94,7 @@ str_enum!(
     (STATUS_STACK_TRACE, "print-stack-trace"),
     (STATUS_STACK_TRACE, "stack-trace"),
     (STATUS_TEST_FEATURE, "test-feature"),
+    (STATUS_UNIX_TIME, "unix-time"),
 );
 
 impl StatusCmd {
@@ -570,6 +572,19 @@ pub fn status(parser: &Parser, streams: &mut IoStreams, args: &mut [&wstr]) -> O
                         // This is a relative path, we can't canonicalize it
                         let path = str2wcstring(path.as_os_str().as_bytes());
                         streams.out.appendln(path);
+                    }
+                }
+                STATUS_UNIX_TIME => {
+                    use std::time::SystemTime;
+
+                    match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+                        Ok(n) => {
+                            streams.out.appendln(n.as_secs().to_wstring());
+                        }
+                        Err(_) => {
+                            streams.err.appendln(wgettext!("Cannot get the time"));
+                            return STATUS_CMD_ERROR;
+                        }
                     }
                 }
                 STATUS_SET_JOB_CONTROL | STATUS_FEATURES | STATUS_TEST_FEATURE => {

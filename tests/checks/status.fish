@@ -126,3 +126,22 @@ printf "%s\n" (test-stack-trace-copy | string replace \t '<TAB>')[1..4]
 # CHECK: <TAB>called on line {{\d+}} of file {{.*}}/status.fish
 # CHECK: in function 'test-stack-trace-copy'
 # CHECK: <TAB>called on line {{\d+}} of file {{.*}}/status.fish
+
+# Test status unix-time.
+# This requires we have a usable `date`, and we also can't really
+# rely on it completing at the same time (ASAN, CI, old machines, ...).
+# Much less see that it prints a specific *value*.
+# So we do a very very very simple test - `date` and `status unix-time` are within 20 seconds.
+if command -q date; and set -l d (date +%s); and string match -rq '^\d+' -- $d
+    set -l u (status unix-time)
+    if not test "$(math abs $d - $u)" -lt 20
+        echo Oops time is borken >&2
+        set -S u d >&2
+    end
+end
+
+set -l d (status unix-time)
+sleep 2
+set -l diff (math (status unix-time) - $d)
+test $diff -gt 0 -a $diff -lt 10
+or echo Time difference $diff is off >&2
