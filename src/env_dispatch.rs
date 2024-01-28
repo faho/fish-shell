@@ -496,6 +496,8 @@ fn initialize_curses_using_fallbacks(vars: &EnvStack) {
         .map(|v| v.as_string())
         .unwrap_or(Default::default());
 
+    let mut success = false;
+
     for term in FALLBACKS {
         // If $TERM is already set to the fallback name we're about to use, there's no point in
         // seeing if the fallback name can be used.
@@ -505,8 +507,7 @@ fn initialize_curses_using_fallbacks(vars: &EnvStack) {
 
         // `term` here is one of our hard-coded strings above; we can unwrap because we can
         // guarantee it doesn't contain any interior NULs.
-        let success =
-            curses::setup(Some(&term), |term| apply_term_hacks(vars, term)).is_some();
+        success = curses::setup(Some(&term), |term| apply_term_hacks(vars, term)).is_some();
         if is_interactive_session() {
             if success {
                 FLOG!(warning, wgettext!("Using fallback terminal type"), term);
@@ -522,6 +523,15 @@ fn initialize_curses_using_fallbacks(vars: &EnvStack) {
         if success {
             break;
         }
+    }
+    if !success {
+        if is_interactive_session() {
+            FLOG!(
+                warning,
+                wgettext!("Could not get any terminfo database, falling back to hardcoded xterm-256color values"),
+            );
+        }
+        curses::setup_fallback_term();
     }
 }
 
