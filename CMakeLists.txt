@@ -63,6 +63,7 @@ function(FISH_LINK_DEPS_AND_SIGN target)
             build --bin ${target}
             $<$<CONFIG:Release,RelWithDebInfo>:--release>
             --target ${Rust_CARGO_TARGET}
+            --no-default-features
             ${CARGO_FLAGS}
             ${FEATURES_ARG}
       &&
