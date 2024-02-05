@@ -519,16 +519,8 @@ fn initialize_curses_using_fallbacks(vars: &EnvStack) {
         // `term` here is one of our hard-coded strings above; we can unwrap because we can
         // guarantee it doesn't contain any interior NULs.
         success = curses::setup(Some(&term), |term| apply_term_hacks(vars, term)).is_some();
-        if is_interactive_session() {
-            if success {
-                FLOG!(warning, wgettext!("Using fallback terminal type"), term);
-            } else {
-                FLOG!(
-                    warning,
-                    wgettext!("Could not set up terminal using the fallback terminal type"),
-                    term,
-                );
-            }
+        if is_interactive_session() && success {
+            FLOG!(warning, wgettext!("Using fallback terminal type"), term);
         }
 
         if success {
