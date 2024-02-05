@@ -497,6 +497,17 @@ fn initialize_curses_using_fallbacks(vars: &EnvStack) {
         .unwrap_or(Default::default());
 
     let mut success = false;
+    if current_term == "xterm-256color" {
+        // If we have xterm-256color, let's just use our hard-coded version
+        // instead of trying to read xterm or "ansi".
+        // It's almost certain we can't find terminfo.
+        FLOG!(
+            term_support,
+            "Could not read xterm-256color. Using fallback."
+        );
+        curses::setup_fallback_term();
+        return;
+    }
 
     for term in FALLBACKS {
         // If $TERM is already set to the fallback name we're about to use, there's no point in
