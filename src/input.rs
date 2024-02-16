@@ -26,6 +26,7 @@ use std::sync::{
 };
 
 pub const FISH_BIND_MODE_VAR: &wstr = L!("fish_bind_mode");
+pub const FISH_LAST_BIND_MODE_VAR: &wstr = L!("fish_last_bind_mode");
 pub const DEFAULT_BIND_MODE: &wstr = L!("default");
 
 /// A name for our own key mapping for nul.
@@ -240,7 +241,11 @@ static TERMINFO_MAPPINGS: OnceCell<Box<[TerminfoMapping]>> = OnceCell::new();
 
 /// Return the current bind mode.
 fn input_get_bind_mode(vars: &dyn Environment) -> WString {
-    if let Some(mode) = vars.get(FISH_BIND_MODE_VAR) {
+    input_get_bind_mode_for_var(vars, FISH_BIND_MODE_VAR)
+}
+
+fn input_get_bind_mode_for_var(vars: &dyn Environment, varname: &wstr) -> WString {
+    if let Some(mode) = vars.get(varname) {
         mode.as_string()
     } else {
         DEFAULT_BIND_MODE.to_owned()
@@ -252,9 +257,28 @@ fn input_set_bind_mode(parser: &Parser, bm: &wstr) {
     // Only set this if it differs to not execute variable handlers all the time.
     // modes may not be empty - empty is a sentinel value meaning to not change the mode
     assert!(!bm.is_empty());
-    if input_get_bind_mode(parser.vars()) != bm {
-        // Must send events here - see #6653.
-        parser.set_var_and_fire(FISH_BIND_MODE_VAR, EnvMode::GLOBAL, vec![bm.to_owned()]);
+    if bm == L!("last") {
+        let last = input_get_bind_mode_for_var(parser.vars(), FISH_LAST_BIND_MODE_VAR);
+        if bm != last {
+            let cur = input_get_bind_mode(parser.vars());
+            parser.set_var_and_fire(
+                FISH_LAST_BIND_MODE_VAR,
+                EnvMode::GLOBAL,
+                vec![cur.to_owned()],
+            );
+            parser.set_var_and_fire(FISH_BIND_MODE_VAR, EnvMode::GLOBAL, vec![last.to_owned()]);
+        }
+    } else {
+        let last = input_get_bind_mode(parser.vars());
+        if last != bm {
+            // Must send events here - see #6653.
+            parser.set_var_and_fire(
+                FISH_LAST_BIND_MODE_VAR,
+                EnvMode::GLOBAL,
+                vec![last.to_owned()],
+            );
+            parser.set_var_and_fire(FISH_BIND_MODE_VAR, EnvMode::GLOBAL, vec![bm.to_owned()]);
+        }
     }
 }
 
