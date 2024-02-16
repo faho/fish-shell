@@ -2977,7 +2977,7 @@ impl ReaderData {
                 self.force_exec_prompt_and_repaint = false;
                 self.parser().libdata_mut().pods.is_repaint = false;
             }
-            rl::SelfInsert | rl::SelfInsertNotFirst | rl::FuncAnd | rl::FuncOr => {
+            rl::SelfInsert | rl::SelfInsertNotFirst | rl::FuncAnd | rl::FuncOr | rl::PassOn => {
                 panic!("should have been handled by inputter_t::readch");
             }
         }

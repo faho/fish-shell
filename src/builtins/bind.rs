@@ -228,7 +228,16 @@ impl BuiltinBind {
         user: bool,
         streams: &mut IoStreams,
     ) -> bool {
-        let cmds = cmds.iter().map(|&s| s.to_owned()).collect();
+        let cmds: Vec<_> = cmds.iter().map(|&s| s.to_owned()).collect();
+        if sets_mode.is_none() {
+            if cmds.contains(&L!("pass-on").to_owned()) {
+                streams
+                    .err
+                    .append(L!("Cannot use pass-on without --sets-mode\n"));
+                // We cannot pass-on without sets-mode
+                return false;
+            }
+        }
         if terminfo {
             if let Some(seq2) = self.get_terminfo_sequence(seq, streams) {
                 self.input_mappings.add(seq2, cmds, mode, sets_mode, user);

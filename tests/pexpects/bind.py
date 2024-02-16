@@ -380,6 +380,28 @@ send('\x02\x02\x02') # ctrl-b, backward-char
 sendline('\x1bu') # alt+u, upcase word
 expect_prompt("fooBAR")
 
+# pass-on
+sendline("echo $fish_bind_mode")
+expect_prompt("default")
+sendline(r"bind -m select \cg begin-selection backward-char")
+expect_prompt()
+# TODO: Adding another bind function after pass-on does not currently work
+# because we only change the mode *after* the full binding.
+sendline(r"bind -M select -m last '' pass-on")
+expect_prompt()
+sendline(r"bind -M select \ex kill-selection end-selection")
+expect_prompt()
+sendline(r"bind -M select \cg backward-char")
+expect_prompt()
+
+send("echo foobar")
+send("\x1b[D") # move one left, cursor on "a"
+send("\x07" * 4) # move four left, selection on and cursor on first o
+send("\x1bx") # kill selection, removing "ooba"
+sendline("x") # move to regular mode, insert x
+expect_prompt("fxr") # end result "fxr"
+
+
 # Check that the builtin version of `exit` works
 # (for obvious reasons this MUST BE LAST)
 sendline("function myexit; echo exit; exit; end; bind \cz myexit")
