@@ -39,6 +39,17 @@ function fish_default_key_bindings -d "emacs-like key binds"
     bind --preset $argv -k right forward-char
     bind --preset $argv -k left backward-char
 
+    bind --preset $argv -k sleft -m select begin-selection backward-char
+    bind --preset $argv -k sright -m select begin-selection forward-char
+    bind --preset -M select -k sleft backward-char
+    bind --preset -M select -k sright forward-char
+    bind --preset -M select \cx fish_clipboard_copy
+    bind --preset -M select \cc fish_clipboard_copy
+    bind --preset -M select -k dc -m last kill-selection end-selection
+    bind --preset -M select \x7f -m last kill-selection end-selection
+    bind --preset -M select \b -m last kill-selection end-selection
+    bind --preset -M select '' -m last end-selection pass-on
+
     bind --preset $argv -k dc delete-char
     bind --preset $argv -k backspace backward-delete-char
     bind --preset $argv \x7f backward-delete-char
