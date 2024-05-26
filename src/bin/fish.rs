@@ -115,6 +115,12 @@ fn install(noconfirm: bool) {
         eprintln!("Installing fish's data files to '{}'.", dir.display());
     }
 
+    // Remove the install directory first, to clean out any removed files.
+    if let Err(err) = fs::remove_dir_all(dir.clone()) {
+        eprintln!("Removing '{}' failed: {}", dir.display(), err);
+        std::process::exit(1);
+    }
+
     for file in Asset::iter() {
         let path = dir.join(file.as_ref());
         let Ok(_) = fs::create_dir_all(path.parent().unwrap()) else {
