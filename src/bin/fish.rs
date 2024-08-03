@@ -89,7 +89,11 @@ fn install(confirm: bool) {
     use std::io::ErrorKind;
     use std::io::Write;
     use std::io::{stderr, stdin};
-    let dir = PathBuf::from(DATA_DIR).join(DATA_DIR_SUBDIR);
+    let Some(home) = fish::env::get_home() else {
+        eprintln!("Can't find $HOME",);
+        std::process::exit(1);
+    };
+    let dir = PathBuf::from(home).join(DATA_DIR).join(DATA_DIR_SUBDIR);
 
     // TODO: Translation,
     // FLOG?
@@ -345,7 +349,21 @@ fn source_config_in_directory(parser: &Parser, dir: &wstr) -> bool {
 
 /// Parse init files. exec_path is the path of fish executable as determined by argv[0].
 fn read_init(parser: &Parser, paths: &ConfigPaths) {
-    let datapath = str2wcstring(paths.data.as_os_str().as_bytes());
+    let datapath = if cfg!(feature = "installable") {
+        let Some(home) = fish::env::get_home() else {
+            FLOG!(
+                error,
+                "Cannot find home directory and will refuse to read configuration"
+            );
+            return;
+        };
+
+        let p = PathBuf::from(home).join(paths.data.clone());
+        str2wcstring(p.as_os_str().as_bytes())
+    } else {
+        str2wcstring(paths.data.as_os_str().as_bytes())
+    };
+
     if !source_config_in_directory(parser, &datapath) {
         // If we cannot read share/config.fish, our internal configuration,
         // something is wrong.
