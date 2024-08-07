@@ -1,0 +1,32 @@
+name: staticbuilds
+
+on: [push, pull_request, workflow_dispatch]
+
+env:
+  CTEST_PARALLEL_LEVEL: "1"
+  CMAKE_BUILD_PARALLEL_LEVEL: "4"
+
+jobs:
+  staticbuilds:
+
+    runs-on: ubuntu-latest
+
+    container:
+        image: alpine:3.20.2
+
+    permissions:
+      contents: read
+
+    steps:
+    - uses: dtolnay/rust-toolchain@1.70
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Build
+      run: cargo build -r
+           tar -cazf fish.tar.xz -c target/release/ fish{,_indent,_key_reader}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: fish.tar.xz
+        path: 'fish.tar.xz'
+        retention-days: 14
