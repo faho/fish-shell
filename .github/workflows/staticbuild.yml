@@ -31,7 +31,7 @@ jobs:
            sudo apt install musl-tools crossbuild-essential-arm64 -y
     - name: Build
       run: |
-           CC=aarch64-linux-gnu-gcc RUSTFLAGS="-C linker=aarch64-linux-gnu-gcc -C link-arg=-lgcc" cargo build -r --target aarch64-unknown-linux-musl
+           CMAKE_WITH_GETTEXT=0 CC=aarch64-linux-gnu-gcc RUSTFLAGS="-C linker=aarch64-linux-gnu-gcc -C link-arg=-lgcc" cargo build -r --target aarch64-unknown-linux-musl
            cargo build -r --target x86_64-unknown-linux-musl
     - name: Compress
       run: |
