@@ -109,12 +109,12 @@ fn install(noconfirm: bool) {
         let _ = stderr().flush();
 
         let mut input = String::new();
-        stdin()
-            .read_line(&mut input)
-            .expect("Failed to read from stdin");
+        if let Err(error) = stdin().read_line(&mut input) {
+            eprintln!("error: {error}")
+        }
 
         if input != "yes\n" {
-            eprintln!("Exiting without writing any files");
+            eprintln!("Exiting without writing any files\n");
             std::process::exit(1);
         }
     } else {
@@ -145,7 +145,10 @@ fn install(noconfirm: bool) {
         };
         // This should be impossible.
         let d = Asset::get(&file).expect("File was somehow not included???");
-        f.write_all(&d.data).expect("FAILED TO WRITE");
+        if let Err(error) = f.write_all(&d.data) {
+            eprintln!("error: {error}");
+            std::process::exit(1);
+        }
     }
     let verfile = dir.join("fish-install-version");
     let res = File::create(&verfile);
