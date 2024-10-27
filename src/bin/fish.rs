@@ -87,8 +87,7 @@ fn install(noconfirm: bool) {
     use std::io::ErrorKind;
     use std::io::Write;
     use std::io::{stderr, stdin};
-    let (_, home) = fish::env::get_user_home();
-    let Some(home) = home else {
+    let Some(home) = fish::env::get_home() else {
         eprintln!("Can't find $HOME",);
         std::process::exit(1);
     };
@@ -355,7 +354,7 @@ fn source_config_in_directory(parser: &Parser, dir: &wstr) -> bool {
 /// Parse init files. exec_path is the path of fish executable as determined by argv[0].
 fn read_init(parser: &Parser, paths: &ConfigPaths) {
     let datapath = if cfg!(feature = "installable") {
-        let (_, Some(home)) = fish::env::get_user_home() else {
+        let Some(home) = fish::env::get_home() else {
             FLOG!(
                 error,
                 "Cannot find home directory and will refuse to read configuration"

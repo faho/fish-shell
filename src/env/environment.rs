@@ -454,9 +454,9 @@ fn get_hostname_identifier() -> Option<WString> {
     }
 }
 
-/// Get values for $USER and $HOME via getpwuid,
+/// Get values for $HOME via getpwuid,
 /// without trusting $USER or $HOME.
-pub fn get_user_home() -> (Option<String>, Option<String>) {
+pub fn get_home() -> Option<String> {
     let uid: uid_t = geteuid();
 
     let mut userinfo: MaybeUninit<libc::passwd> = MaybeUninit::uninit();
@@ -474,18 +474,16 @@ pub fn get_user_home() -> (Option<String>, Option<String>) {
         )
     };
     if retval != 0 || result.is_null() {
-        return (None, None);
+        return None;
     }
 
     let userinfo = unsafe { userinfo.assume_init() };
-    let name = unsafe { CStr::from_ptr(userinfo.pw_name) };
-    let name = name.to_str().ok().map(|x| x.to_owned());
     if !userinfo.pw_dir.is_null() {
         let home = unsafe { CStr::from_ptr(userinfo.pw_dir) };
         let home = home.to_str().ok().map(|x| x.to_owned());
-        (name, home)
+        home
     } else {
-        (name, None)
+        None
     }
 }
 
