@@ -99,13 +99,15 @@ fn install(confirm: bool) {
     // - Install: Manpages (build via build.rs)
     // - Don't install: __fish_build_paths.fish.in
     if confirm {
-        eprintln!(
-            "This will write fish's data files to '{}'.\n\
-             Please enter 'yes' to continue.",
-            dir.display()
-        );
-        eprint!("> ");
-        let _ = stderr().flush();
+        if isatty(libc::STDIN_FILENO) {
+            eprintln!(
+                "This will write fish's data files to '{}'.\n\
+                 Please enter 'yes' to continue.",
+                dir.display()
+            );
+            eprint!("> ");
+            let _ = stderr().flush();
+        }
 
         let mut input = String::new();
         if let Err(error) = stdin().read_line(&mut input) {
@@ -113,7 +115,7 @@ fn install(confirm: bool) {
         }
 
         if input != "yes\n" {
-            eprintln!("Exiting without writing any files\n");
+            eprintln!("Exiting without writing any files");
             std::process::exit(1);
         }
     } else {
