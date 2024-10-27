@@ -76,7 +76,7 @@ const SYSCONF_DIR: &str = env!("SYSCONFDIR");
 const BIN_DIR: &str = env!("BINDIR");
 
 #[cfg(feature = "installable")]
-fn install(noconfirm: bool) {
+fn install(confirm: bool) {
     use rust_embed::RustEmbed;
 
     #[derive(RustEmbed)]
@@ -98,7 +98,7 @@ fn install(noconfirm: bool) {
     // - Install: Translations
     // - Install: Manpages (build via build.rs)
     // - Don't install: __fish_build_paths.fish.in
-    if !noconfirm {
+    if confirm {
         eprintln!(
             "This will write fish's data files to '{}'.\n\
              Please enter 'yes' to continue.",
@@ -161,7 +161,7 @@ fn install(noconfirm: bool) {
 }
 
 #[cfg(not(feature = "installable"))]
-fn install(_noconfirm: bool) {
+fn install(_confirm: bool) {
     eprintln!("Fish was built without support for self-installation");
     std::process::exit(1);
 }
@@ -521,7 +521,7 @@ fn fish_parse_opt(args: &mut [WString], opts: &mut FishCmdOpts) -> ControlFlow<i
                         std::process::exit(1);
                     }
                 };
-                install(noconfirm);
+                install(!noconfirm);
             }
             'l' => opts.is_login = true,
             'N' => {
