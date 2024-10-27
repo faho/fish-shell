@@ -364,14 +364,7 @@ fn read_init(parser: &Parser, paths: &ConfigPaths) {
         };
 
         let p = PathBuf::from(home).join(paths.data.clone());
-        let Some(homestr) = p.to_str() else {
-            FLOG!(
-                error,
-                "Cannot decode home directory and will refuse to read configuration"
-            );
-            return;
-        };
-        str2wcstring(homestr.as_bytes())
+        str2wcstring(p.as_os_str().as_bytes())
     } else {
         str2wcstring(paths.data.as_os_str().as_bytes())
     };
