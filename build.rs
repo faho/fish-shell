@@ -335,6 +335,6 @@ fn build_man(build_dir: &Path) {
         mandir.to_str().unwrap(),
     ];
     if let Err(output) = Command::new("sphinx-build").args(args).output() {
-        panic!("{}", output)
+        println!("cargo:warning=Could not build man pages: {:?}", output);
     }
 }
