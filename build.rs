@@ -36,6 +36,12 @@ fn main() {
         &get_version(&env::current_dir().unwrap()),
     );
 
+    #[cfg(feature = "installable")]
+    {
+        let cman = std::fs::canonicalize(env!("CARGO_MANIFEST_DIR")).unwrap();
+        let targetman = cman.as_path().join("target").join("man");
+        build_man(&targetman);
+    }
     rsconf::rebuild_if_path_changed("src/libc.c");
     cc::Build::new()
         .file("src/libc.c")
@@ -307,4 +313,28 @@ fn get_version(src_dir: &Path) -> String {
     // TODO: Do we just use the cargo version here?
 
     "unknown".to_string()
+}
+
+fn build_man(build_dir: &Path) {
+    use std::process::Command;
+    let mandir = build_dir;
+    let docsrc_path = std::fs::canonicalize(env!("CARGO_MANIFEST_DIR"))
+        .unwrap()
+        .as_path()
+        .join("doc_src");
+    let docsrc = docsrc_path.to_str().unwrap();
+    let args = &[
+        "-j",
+        "auto",
+        "-q",
+        "-b",
+        "man",
+        "-c",
+        docsrc,
+        docsrc,
+        mandir.to_str().unwrap(),
+    ];
+    if let Err(output) = Command::new("sphinx-build").args(args).output() {
+        panic!("{}", output)
+    }
 }
