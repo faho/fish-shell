@@ -4,7 +4,6 @@ use super::environment_impl::{
 };
 use super::{ConfigPaths, ElectricVar};
 use crate::abbrs::{abbrs_get_set, Abbreviation, Position};
-use crate::common::wcs2string;
 use crate::common::{str2wcstring, unescape_string, wcs2zstring, UnescapeStringStyle};
 use crate::env::{EnvMode, EnvVar, Statuses};
 use crate::env_dispatch::{env_dispatch_init, env_dispatch_var_change};
@@ -35,7 +34,6 @@ use std::ffi::CStr;
 use std::io::Write;
 use std::mem::MaybeUninit;
 use std::os::unix::prelude::*;
-use std::path::PathBuf;
 use std::sync::Arc;
 
 /// Set when a universal variable has been modified but not yet been written to disk via sync().
@@ -644,11 +642,16 @@ pub fn env_init(paths: Option<&ConfigPaths>, do_uvars: bool, default_paths: bool
             EnvMode::GLOBAL,
             str2wcstring(paths.sysconf.as_os_str().as_bytes()),
         );
-        vars.set_one(
-            FISH_HELPDIR_VAR,
-            EnvMode::GLOBAL,
-            str2wcstring(paths.doc.as_os_str().as_bytes()),
-        );
+
+        if !cfg!(feature = "installable") {
+            vars.set_one(
+                FISH_HELPDIR_VAR,
+                EnvMode::GLOBAL,
+                str2wcstring(paths.doc.as_os_str().as_bytes()),
+            );
+        } else {
+            vars.set_empty(FISH_HELPDIR_VAR, EnvMode::GLOBAL);
+        }
         if let Some(bp) = &paths.bin {
             vars.set_one(
                 FISH_BIN_DIR,
