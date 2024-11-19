@@ -84,7 +84,7 @@ fn install(confirm: bool) {
     struct Asset;
 
     #[derive(RustEmbed)]
-    #[folder = "target/man"]
+    #[folder = "target/man/man1"]
     #[prefix = "man/man1/"]
     struct Docs;
 

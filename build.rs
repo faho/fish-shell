@@ -318,6 +318,7 @@ fn get_version(src_dir: &Path) -> String {
 fn build_man(build_dir: &Path) {
     use std::process::Command;
     let mandir = build_dir;
+    let sec1dir = mandir.join("man1");
     let docsrc_path = std::fs::canonicalize(env!("CARGO_MANIFEST_DIR"))
         .unwrap()
         .as_path()
@@ -331,8 +332,12 @@ fn build_man(build_dir: &Path) {
         "man",
         "-c",
         docsrc,
-        docsrc,
+        // doctree path - put this *above* the man1 dir to exclude it.
+        // this is ~6M
+        "-d",
         mandir.to_str().unwrap(),
+        docsrc,
+        sec1dir.to_str().unwrap(),
     ];
     if let Err(output) = Command::new("sphinx-build").args(args).output() {
         println!("cargo:warning=Could not build man pages: {:?}", output);
