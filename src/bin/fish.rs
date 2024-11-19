@@ -412,31 +412,37 @@ fn read_init(parser: &Parser, paths: &ConfigPaths) {
 
     #[cfg(feature = "installable")]
     {
-        // When fish is installable, we write the version to a file,
-        // now we check it.
-        let verfile =
-            PathBuf::from(fish::common::wcs2osstring(&datapath)).join("fish-install-version");
-        let Ok(version) = std::fs::read_to_string(verfile) else {
-            let escaped_pathname = escape(&datapath);
-            FLOGF!(
-                error,
-                "Fish cannot find its asset files in '%ls'.\n\
-                 Refusing to read configuration because of this.",
-                escaped_pathname,
-            );
-            return;
-        };
+        if paths
+            .bin
+            .clone()
+            .is_none_or(|x| !x.starts_with(env!("CARGO_MANIFEST_DIR")))
+        {
+            // When fish is installable, we write the version to a file,
+            // now we check it.
+            let verfile =
+                PathBuf::from(fish::common::wcs2osstring(&datapath)).join("fish-install-version");
+            let Ok(version) = std::fs::read_to_string(verfile) else {
+                let escaped_pathname = escape(&datapath);
+                FLOGF!(
+                    error,
+                    "Fish cannot find its asset files in '%ls'.\n\
+                     Refusing to read configuration because of this.",
+                    escaped_pathname,
+                );
+                return;
+            };
 
-        if version != fish::BUILD_VERSION {
-            FLOGF!(
-                error,
-                "Asset files are version %s, this fish is version %s. Please run `fish --install` again",
-                version,
-                fish::BUILD_VERSION
-            );
-            // We could refuse to read any config,
-            // but that seems a bit harsh.
-            // return;
+            if version != fish::BUILD_VERSION {
+                FLOGF!(
+                    error,
+                    "Asset files are version %s, this fish is version %s. Please run `fish --install` again",
+                    version,
+                    fish::BUILD_VERSION
+                );
+                // We could refuse to read any config,
+                // but that seems a bit harsh.
+                // return;
+            }
         }
     }
     if !source_config_in_directory(parser, &datapath) {
