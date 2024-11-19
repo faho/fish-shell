@@ -333,12 +333,31 @@ fn determine_config_directory_paths(argv0: impl AsRef<Path>) -> ConfigPaths {
 
     if !done {
         // Fall back to what got compiled in.
+        let data = if cfg!(feature = "installable") {
+            let Some(home) = fish::env::get_home() else {
+                FLOG!(
+                    error,
+                    "Cannot find home directory and will refuse to read configuration"
+                );
+                return paths;
+            };
+
+            PathBuf::from(home).join(DATA_DIR).join(DATA_DIR_SUBDIR)
+        } else {
+            PathBuf::from(DATA_DIR).join(DATA_DIR_SUBDIR)
+        };
+        let bin = if cfg!(feature = "installable") {
+            exec_path.parent().map(|x| x.to_path_buf())
+        } else {
+            Some(PathBuf::from(BIN_DIR))
+        };
+
         FLOG!(config, "Using compiled in paths:");
         paths = ConfigPaths {
-            data: PathBuf::from(DATA_DIR).join(DATA_DIR_SUBDIR),
+            data,
             sysconf: PathBuf::from(SYSCONF_DIR).join("fish"),
             doc: DOC_DIR.into(),
-            bin: Some(BIN_DIR.into()),
+            bin,
         }
     }
 
@@ -391,20 +410,7 @@ fn source_config_in_directory(parser: &Parser, dir: &wstr) -> bool {
 
 /// Parse init files. exec_path is the path of fish executable as determined by argv[0].
 fn read_init(parser: &Parser, paths: &ConfigPaths) {
-    let datapath = if cfg!(feature = "installable") {
-        let Some(home) = fish::env::get_home() else {
-            FLOG!(
-                error,
-                "Cannot find home directory and will refuse to read configuration"
-            );
-            return;
-        };
-
-        let p = PathBuf::from(home).join(paths.data.clone());
-        str2wcstring(p.as_os_str().as_bytes())
-    } else {
-        str2wcstring(paths.data.as_os_str().as_bytes())
-    };
+    let datapath = str2wcstring(paths.data.as_os_str().as_bytes());
 
     #[cfg(feature = "installable")]
     {
