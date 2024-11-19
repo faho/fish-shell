@@ -636,25 +636,7 @@ pub fn env_init(paths: Option<&ConfigPaths>, do_uvars: bool, default_paths: bool
     setup_user(vars);
 
     if let Some(paths) = paths {
-        let datadir = if cfg!(feature = "installable") {
-            if let Some(home) = vars.get(L!("HOME")) {
-                if let Ok(strhome) = std::str::from_utf8(&wcs2string(&home.as_string())) {
-                    let dir = PathBuf::from(strhome)
-                        .join(env!("DATADIR"))
-                        .join(env!("DATADIR_SUBDIR"));
-                    str2wcstring(dir.as_os_str().as_bytes())
-                } else {
-                    // This should be impossible given we already read_init.
-                    FLOG!(error, "Cannot decode $HOME");
-                    "".into()
-                }
-            } else {
-                FLOG!(error, "Cannot find $HOME");
-                "".into()
-            }
-        } else {
-            str2wcstring(paths.data.as_os_str().as_bytes())
-        };
+        let datadir = str2wcstring(paths.data.as_os_str().as_bytes());
 
         vars.set_one(FISH_DATADIR_VAR, EnvMode::GLOBAL, datadir.clone());
         vars.set_one(
