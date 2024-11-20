@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #![allow(unstable_name_collisions)]
 #![allow(clippy::uninlined_format_args)]
 
+#[allow(unused_imports)]
+use fish::future::IsSomeAnd;
 use fish::{
     ast::Ast,
     builtins::shared::{
