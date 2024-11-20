@@ -340,7 +340,17 @@ fn build_man(build_dir: &Path) {
         sec1dir.to_str().unwrap(),
     ];
     let _ = std::fs::create_dir_all(sec1dir.to_str().unwrap());
-    if let Err(output) = Command::new("sphinx-build").args(args).output() {
-        println!("cargo:warning=Could not build man pages: {:?}", output);
+
+    match Command::new("sphinx-build").args(args).output() {
+        Err(x) => {
+            println!("cargo:warning=Could not build man pages: {:?}", x);
+        }
+        Ok(x) => {
+            if !x.status.success() {
+                println!("cargo:warning=Could not build man pages: {:?}", std::str::from_utf8(&x.stdout).unwrap());
+                println!("cargo:warning=Could not build man pages: {:?}", std::str::from_utf8(&x.stderr).unwrap());
+                panic!("Building docs failed");
+            }
+        }
     }
 }
