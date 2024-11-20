@@ -310,9 +310,8 @@ fn get_version(src_dir: &Path) -> String {
             return version + "-g" + &rev;
         }
     }
-    // TODO: Do we just use the cargo version here?
 
-    "unknown".to_string()
+    panic!("Could not get a version. Either set $FISH_BUILD_VERSION or install git.");
 }
 
 fn build_man(build_dir: &Path) {
