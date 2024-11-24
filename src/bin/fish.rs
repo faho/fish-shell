@@ -416,6 +416,8 @@ fn read_init(parser: &Parser, paths: &ConfigPaths) {
 
     #[cfg(feature = "installable")]
     {
+        // (false-positive, is_none_or is a backport, this builds with 1.70)
+        #[allow(clippy::incompatible_msrv)]
         if paths
             .bin
             .clone()
