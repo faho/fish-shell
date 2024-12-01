@@ -427,15 +427,20 @@ fn read_init(parser: &Parser, paths: &ConfigPaths) {
             // now we check it.
             let verfile =
                 PathBuf::from(fish::common::wcs2osstring(&datapath)).join("fish-install-version");
-            let Ok(version) = std::fs::read_to_string(verfile) else {
-                let escaped_pathname = escape(&datapath);
-                FLOGF!(
-                    error,
-                    "Fish cannot find its asset files in '%ls'.\n\
-                     Refusing to read configuration because of this.",
-                    escaped_pathname,
-                );
-                return;
+            let version = match std::fs::read_to_string(verfile) {
+                Ok(x) => x,
+                Err(err) => {
+                    let escaped_pathname = escape(&datapath);
+                    FLOGF!(
+                        error,
+                        "Fish cannot find its asset files in '%ls'.\n\
+                         Refusing to read configuration because of this.\n\
+                         The underlying error is: '%ls'",
+                        escaped_pathname,
+                        err.to_string()
+                    );
+                    return;
+                }
             };
 
             if version != fish::BUILD_VERSION {
