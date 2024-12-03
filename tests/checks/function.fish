@@ -187,4 +187,9 @@ functions -q foo
 echo exists $status
 # CHECK: exists 1
 
+function foo --on-signal kill; end
+# CHECKERR: {{.*}}function.fish (line {{\d+}}): function: SIGKILL cannot be intercepted
+# CHECKERR: function foo --on-signal kill; end
+# CHECKERR: ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+
 exit 0

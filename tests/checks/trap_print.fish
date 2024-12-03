@@ -7,7 +7,7 @@ trap -p
 # CHECK:
 
 # Validate both SIG, no-SIG, uppercase, and lowercase.
-trap "true" SIGTERM kill ExIT INT
+trap "true" SIGTERM ExIT INT
 
 trap -p
 # CHECK: # Defined via `source`
@@ -16,10 +16,6 @@ trap -p
 # CHECK: end
 # CHECK: # Defined via `source`
 # CHECK: function __trap_handler_INT --on-signal SIGINT
-# CHECK:  true;
-# CHECK: end
-# CHECK: # Defined via `source`
-# CHECK: function __trap_handler_KILL --on-signal SIGKILL
 # CHECK:  true;
 # CHECK: end
 # CHECK: # Defined via `source`

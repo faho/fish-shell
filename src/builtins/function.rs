@@ -114,6 +114,13 @@ fn parse_cmd_opts(
                     ));
                     return STATUS_INVALID_ARGS;
                 };
+                if signal == libc::SIGKILL {
+                    streams.err.append(wgettext_fmt!(
+                        "%ls: SIGKILL cannot be intercepted",
+                        cmd,
+                    ));
+                    return STATUS_INVALID_ARGS;
+                }
                 opts.events.push(EventDescription::Signal { signal });
             }
             'v' => {
