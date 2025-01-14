@@ -5,12 +5,10 @@ isolated-tmux-start
 
 isolated-tmux send-keys \
     "sleep 0.5 &" Enter
-sleep 0.1
 isolated-tmux send-keys \
     "echo hello"
-sleep 0.6
 isolated-tmux send-keys Space world
-sleep 0.1
+tmux-sleep
 isolated-tmux capture-pane -p
 # CHECK: prompt 0> sleep 0.5 &
 # CHECK: prompt 0> echo hello

@@ -14,6 +14,7 @@ set -g isolated_tmux_fish_extra_args -C '
 '
 
 isolated-tmux-start
+tmux-sleep
 
 isolated-tmux send-keys 'echo foo' Enter
 tmux-sleep

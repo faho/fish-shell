@@ -46,7 +46,6 @@ isolated-tmux capture-pane -p | sed -n '1p;$p'
 # Canceling the pager removes the inserted completion, no matter what happens in the search field.
 # The common prefix remains because it is inserted before the pager is shown.
 isolated-tmux send-keys C-c
-tmux-sleep
 isolated-tmux send-keys C-l foo2 Space BTab b BSpace b Escape
 tmux-sleep
 isolated-tmux capture-pane -p
@@ -54,7 +53,6 @@ isolated-tmux capture-pane -p
 
 # Check that down-or-search works even when the pager is not selected.
 isolated-tmux send-keys C-u foo2 Space Tab
-tmux-sleep
 isolated-tmux send-keys Down
 tmux-sleep
 isolated-tmux capture-pane -p
@@ -79,7 +77,6 @@ isolated-tmux capture-pane -p
 # CHECK: prompt 5> foo2 aabc old-arg
 
 isolated-tmux send-keys C-u 'echo suggest this' Enter C-l
-tmux-sleep
 isolated-tmux send-keys 'echo sug' C-w C-z
 tmux-sleep
 isolated-tmux capture-pane -p
@@ -87,9 +84,7 @@ isolated-tmux capture-pane -p
 
 isolated-tmux send-keys C-u 'bind ctrl-s forward-single-char' Enter C-l
 isolated-tmux send-keys 'echo suggest thi'
-tmux-sleep
 isolated-tmux send-keys C-s
-tmux-sleep
 isolated-tmux send-keys C-s
 tmux-sleep
 isolated-tmux capture-pane -p
@@ -97,7 +92,6 @@ isolated-tmux capture-pane -p
 
 isolated-tmux send-keys C-u
 isolated-tmux send-keys 'echo sugg' C-a
-tmux-sleep
 isolated-tmux send-keys C-e M-f Space nothing
 tmux-sleep
 isolated-tmux capture-pane -p
@@ -106,13 +100,18 @@ isolated-tmux capture-pane -p
 isolated-tmux send-keys C-u 'bind \cs forward-char-passive' Enter C-l
 isolated-tmux send-keys C-u 'bind \cb backward-char-passive' Enter C-l
 isolated-tmux send-keys C-u 'echo do not accept this' Enter C-l
-tmux-sleep
 isolated-tmux send-keys 'echo do not accept thi' C-b C-b DC C-b C-s 'h'
-tmux-sleep
 isolated-tmux send-keys C-s C-s C-s 'x'
+tmux-sleep
 isolated-tmux capture-pane -p
 # CHECK: prompt 10> echo do not accept thix
 isolated-tmux send-keys C-u C-l ': {*,' Tab Tab Space ,
 tmux-sleep
 isolated-tmux capture-pane -p
 # CHECK: prompt 10> : {*,cmake/ ,{{.*}}
+
+isolated-tmux send-keys 'touch ~/"path with spaces"' Enter C-l \
+    'cat ~/space' Tab
+tmux-sleep
+isolated-tmux capture-pane -p
+# CHECK: prompt 11> cat ~/path\ with\ spaces
