@@ -29,7 +29,9 @@ function isolated-tmux-start
 
     function tmux-sleep
         set -q CI && sleep 1
-        or sleep 0.3
+        # this really differs between systems. on a regular linux laptop,
+        # 0.1 would be enough, but on a raspberry pi, 0.3 isn't.
+        or sleep 0.5
     end
 
     set -l fish (status fish-path)
