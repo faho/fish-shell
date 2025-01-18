@@ -4,7 +4,7 @@ use super::environment_impl::{
 };
 use super::{ConfigPaths, ElectricVar};
 use crate::abbrs::{abbrs_get_set, Abbreviation, Position};
-use crate::common::{str2wcstring, unescape_string, wcs2zstring, UnescapeStringStyle};
+use crate::common::{str2wcstring, unescape_string, wcs2string, UnescapeStringStyle};
 use crate::env::{EnvMode, EnvVar, Statuses};
 use crate::env_dispatch::{env_dispatch_init, env_dispatch_var_change};
 use crate::env_universal_common::CallbackDataList;
@@ -32,8 +32,8 @@ use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::ffi::CStr;
 use std::io::Write;
-use std::mem::MaybeUninit;
 use std::os::unix::prelude::*;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 /// Set when a universal variable has been modified but not yet been written to disk via sync().
@@ -452,37 +452,15 @@ fn get_hostname_identifier() -> Option<WString> {
     }
 }
 
-/// Get values for $HOME via getpwuid,
-/// without trusting $USER or $HOME.
-pub fn get_home() -> Option<String> {
-    let uid: uid_t = geteuid();
+/// Get values for $HOME, without trusting $USER or $HOME.
+pub fn get_home() -> Option<PathBuf> {
+    let uid = nix::unistd::Uid::effective();
 
-    let mut userinfo: MaybeUninit<libc::passwd> = MaybeUninit::uninit();
-    let mut result: *mut libc::passwd = std::ptr::null_mut();
-    let mut buf = [0 as libc::c_char; 8192];
-
-    // We need to get the data via the uid and don't trust $USER.
-    let retval = unsafe {
-        libc::getpwuid_r(
-            uid,
-            userinfo.as_mut_ptr(),
-            buf.as_mut_ptr(),
-            buf.len(),
-            &mut result,
-        )
-    };
-    if retval != 0 || result.is_null() {
+    let Ok(Some(user)) = nix::unistd::User::from_uid(uid) else {
         return None;
-    }
+    };
 
-    let userinfo = unsafe { userinfo.assume_init() };
-    if !userinfo.pw_dir.is_null() {
-        let home = unsafe { CStr::from_ptr(userinfo.pw_dir) };
-        let home = home.to_str().ok().map(|x| x.to_owned());
-        home
-    } else {
-        None
-    }
+    Some(user.dir)
 }
 
 /// Set up the USER and HOME variable.
@@ -490,80 +468,52 @@ fn setup_user(vars: &EnvStack) {
     let uid: uid_t = geteuid();
     let user_var = vars.get_unless_empty(L!("USER"));
 
-    let mut userinfo: MaybeUninit<libc::passwd> = MaybeUninit::uninit();
-    let mut result: *mut libc::passwd = std::ptr::null_mut();
-    let mut buf = [0 as libc::c_char; 8192];
-
     // If we have a $USER, we try to get the passwd entry for the name.
     // If that has the same UID that we use, we assume the data is correct.
     if let Some(user_var) = user_var {
-        let unam_narrow = wcs2zstring(&user_var.as_string());
-        let retval = unsafe {
-            libc::getpwnam_r(
-                unam_narrow.as_ptr(),
-                userinfo.as_mut_ptr(),
-                buf.as_mut_ptr(),
-                buf.len(),
-                &mut result,
-            )
-        };
-        if retval == 0 && !result.is_null() {
-            let userinfo = unsafe { userinfo.assume_init() };
-            if unsafe { *result }.pw_uid == uid {
-                // The uid matches but we still might need to set $HOME.
-                if vars.get_unless_empty(L!("HOME")).is_none() {
-                    if !userinfo.pw_dir.is_null() {
-                        let s = unsafe { CStr::from_ptr(userinfo.pw_dir) };
+        let unam_narrow = wcs2string(&user_var.as_string());
+        if let Ok(unam) = std::str::from_utf8(&unam_narrow) {
+            if let Ok(Some(mut user)) = nix::unistd::User::from_name(unam) {
+                if user.uid == uid.into() {
+                    if vars.get_unless_empty(L!("HOME")).is_none() {
                         vars.set_one(
                             L!("HOME"),
                             EnvMode::GLOBAL | EnvMode::EXPORT,
-                            str2wcstring(s.to_bytes()),
+                            str2wcstring(user.dir.as_mut_os_str().as_encoded_bytes()),
                         );
                     } else {
                         vars.set_empty(L!("HOME"), EnvMode::GLOBAL | EnvMode::EXPORT);
                     }
+                    return;
                 }
-                return;
             }
         }
     }
 
+    let uid = nix::unistd::Uid::effective();
+
     // Either we didn't have a $USER or it had a different uid.
     // We need to get the data *again* via the uid.
-    let retval = unsafe {
-        libc::getpwuid_r(
-            uid,
-            userinfo.as_mut_ptr(),
-            buf.as_mut_ptr(),
-            buf.len(),
-            &mut result,
-        )
-    };
-    if retval == 0 && !result.is_null() {
-        let userinfo = unsafe { userinfo.assume_init() };
-        let s = unsafe { CStr::from_ptr(userinfo.pw_name) };
-        let uname = str2wcstring(s.to_bytes());
-        vars.set_one(L!("USER"), EnvMode::GLOBAL | EnvMode::EXPORT, uname);
+    if let Ok(Some(mut user)) = nix::unistd::User::from_uid(uid) {
+        vars.set_one(
+            L!("USER"),
+            EnvMode::GLOBAL | EnvMode::EXPORT,
+            str2wcstring(&user.name.into_bytes()),
+        );
         // Only change $HOME if it's empty, so we allow e.g. `HOME=(mktemp -d)`.
         // This is okay with common `su` and `sudo` because they set $HOME.
         if vars.get_unless_empty(L!("HOME")).is_none() {
-            if !userinfo.pw_dir.is_null() {
-                let s = unsafe { CStr::from_ptr(userinfo.pw_dir) };
-                vars.set_one(
-                    L!("HOME"),
-                    EnvMode::GLOBAL | EnvMode::EXPORT,
-                    str2wcstring(s.to_bytes()),
-                );
-            } else {
-                // We cannot get $HOME. This triggers warnings for history and config.fish already,
-                // so it isn't necessary to warn here as well.
-                vars.set_empty(L!("HOME"), EnvMode::GLOBAL | EnvMode::EXPORT);
-            }
+            vars.set_one(
+                L!("HOME"),
+                EnvMode::GLOBAL | EnvMode::EXPORT,
+                str2wcstring(user.dir.as_mut_os_str().as_encoded_bytes()),
+            );
         }
     } else if vars.get_unless_empty(L!("HOME")).is_none() {
         // If $USER is empty as well (which we tried to set above), we can't get $HOME.
         vars.set_empty(L!("HOME"), EnvMode::GLOBAL | EnvMode::EXPORT);
-    }
+        return;
+    };
 }
 
 /// Make sure the PATH variable contains something.

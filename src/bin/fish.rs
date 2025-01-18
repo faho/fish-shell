@@ -346,7 +346,7 @@ fn determine_config_directory_paths(argv0: impl AsRef<Path>) -> ConfigPaths {
                 return paths;
             };
 
-            PathBuf::from(home).join(DATA_DIR).join(DATA_DIR_SUBDIR)
+            home.join(DATA_DIR).join(DATA_DIR_SUBDIR)
         } else {
             Path::new(DATA_DIR).join(DATA_DIR_SUBDIR)
         };
