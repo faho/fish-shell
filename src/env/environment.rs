@@ -429,27 +429,18 @@ const FISH_CONFIG_DIR: &wstr = L!("__fish_config_dir");
 const FISH_USER_DATA_DIR: &wstr = L!("__fish_user_data_dir");
 const FISH_CACHE_DIR: &wstr = L!("__fish_cache_dir");
 
-/// Maximum length of hostname. Longer hostnames are truncated.
-const HOSTNAME_LEN: usize = 255;
-
 /// Function to get an identifier based on the hostname.
 fn get_hostname_identifier() -> Option<WString> {
-    // The behavior of gethostname if the buffer size is insufficient differs by implementation and
-    // libc version Work around this by using a "guaranteed" sufficient buffer size then truncating
-    // the result.
-    let mut b = [0 as libc::c_char; HOSTNAME_LEN + 1];
-    if unsafe { libc::gethostname(b.as_mut_ptr(), b.len()) } == 0 {
-        let cstr = unsafe { CStr::from_ptr(b.as_ptr()) };
-        let res = str2wcstring(cstr.to_bytes());
+    if let Ok(hname) = nix::unistd::gethostname() {
+        let res = str2wcstring(hname.as_bytes());
 
         if res.is_empty() {
-            None
+            return None;
         } else {
-            Some(res)
+            return Some(res);
         }
-    } else {
-        None
     }
+    None
 }
 
 /// Get values for $HOME, without trusting $USER or $HOME.
