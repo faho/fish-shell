@@ -98,6 +98,7 @@ pub enum ReadlineCmd {
     TogglecaseChar,
     TogglecaseSelection,
     Execute,
+    Flash,
     BeginningOfBuffer,
     EndOfBuffer,
     RepaintMode,

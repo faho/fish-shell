@@ -218,6 +218,9 @@ The following special input functions are available:
 ``exit``
     exit the shell
 
+``flash``
+    makes the commandline flash, like fish does when e.g. there is no completion.
+
 ``forward-bigword``
     move one whitespace-delimited word to the right
 

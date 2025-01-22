@@ -2911,6 +2911,10 @@ impl<'a> Reader<'a> {
                         .reset_abandoning_line(usize::try_from(termsize_last().width).unwrap());
                 }
             }
+            rl::Flash => {
+                self.flash();
+                return;
+            }
             rl::HistoryPrefixSearchBackward
             | rl::HistoryPrefixSearchForward
             | rl::HistorySearchBackward
