@@ -34,15 +34,17 @@ jobs:
            sudo apt install python3-pexpect tmux -y
     - name: Build Linux
       run: |
+           cargo zigbuild --release --target x86_64-unknown-linux-musl
+    - name: Test
+      run: |
+           test -e tests/test_driver.py && tests/test_driver.py -f /tmp target/x86_64-unknown-linux-musl/release/
+    - name: Build Linux Arm
+      run: |
            cargo zigbuild --release --target aarch64-unknown-linux-musl --bin fish
-           cargo zigbuild --release --target x86_64-unknown-linux-musl --bin fish
     - name: Build macOS
       run: |
            PCRE2_SYS_STATIC=1 cargo zigbuild --release --target aarch64-apple-darwin --bin fish
            PCRE2_SYS_STATIC=1 cargo zigbuild --release --target x86_64-apple-darwin --bin fish
-    - name: Test
-      run: |
-           test -e tests/test_driver.py && tests/test_driver.py -f /tmp target/x86_64-unknown-linux-musl/release/
     - name: Compress
       run: |
            tar -cazf fish-amd64.tar.xz -C target/x86_64-unknown-linux-musl/release/ fish
