@@ -311,7 +311,7 @@ fn handle_term_change(vars: &EnvStack) {
 
 fn handle_fish_use_posix_spawn_change(vars: &EnvStack) {
     // Note that if the variable is missing or empty we default to true (if allowed).
-    if !cfg(have_posix_spawn) {
+    if !cfg!(have_posix_spawn) {
         USE_POSIX_SPAWN.store(false, Ordering::Relaxed);
     } else if let Some(var) = vars.get(L!("fish_use_posix_spawn")) {
         let use_posix_spawn =
