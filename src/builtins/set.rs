@@ -42,6 +42,8 @@ struct Options {
     prepend: bool,
     preserve_failure_exit_status: bool,
     no_event: bool,
+    default_vars: Vec<WString>,
+    have_default_vars: bool,
 }
 
 impl Default for Options {
@@ -65,6 +67,8 @@ impl Default for Options {
             prepend: false,
             preserve_failure_exit_status: true,
             no_event: false,
+            default_vars: vec![],
+            have_default_vars: false,
         }
     }
 }
@@ -99,6 +103,7 @@ impl Options {
         const PATH_ARG: char = 1 as char;
         const UNPATH_ARG: char = 2 as char;
         const NO_EVENT_ARG: char = 3 as char;
+        const DEFAULT_VAR_ARG: char = 4 as char;
         // Variables used for parsing the argument list. This command is atypical in using the "+"
         // (REQUIRE_ORDER) option for flag parsing. This is not typical of most fish commands. It means
         // we stop scanning for flags when the first non-flag argument is seen.
@@ -120,6 +125,7 @@ impl Options {
             wopt(L!("path"), NoArgument, PATH_ARG),
             wopt(L!("unpath"), NoArgument, UNPATH_ARG),
             wopt(L!("no-event"), NoArgument, NO_EVENT_ARG),
+            wopt(L!("default"), OptionalArgument, DEFAULT_VAR_ARG),
             wopt(L!("help"), NoArgument, 'h'),
         ];
 
@@ -151,6 +157,12 @@ impl Options {
                 PATH_ARG => opts.pathvar = true,
                 UNPATH_ARG => opts.unpathvar = true,
                 NO_EVENT_ARG => opts.no_event = true,
+                DEFAULT_VAR_ARG => {
+                    opts.have_default_vars = true;
+                    if let Some(arg) = w.woptarg {
+                        opts.default_vars.push(arg.to_owned());
+                    }
+                }
                 'U' => opts.universal = true,
                 'L' => opts.shorten_ok = false,
                 'S' => {
@@ -224,7 +236,7 @@ impl Options {
         streams: &mut IoStreams,
     ) -> Result<(), ErrorCode> {
         // Can't query and erase or list.
-        if opts.query && (opts.erase || opts.list) {
+        if opts.query && (opts.erase || opts.list || opts.have_default_vars) {
             streams.err.appendln(&wgettext_fmt!(BUILTIN_ERR_COMBO, cmd));
             builtin_print_error_trailer(parser, streams.err, cmd);
             return Err(STATUS_INVALID_ARGS);
@@ -271,8 +283,8 @@ impl Options {
             return Err(STATUS_INVALID_ARGS);
         }
 
-        // Trying to erase and (un)export at the same time doesn't make sense.
-        if opts.erase && (opts.exportv || opts.unexport) {
+        // Trying to erase and (un)export/default at the same time doesn't make sense.
+        if opts.erase && (opts.exportv || opts.unexport || opts.have_default_vars) {
             streams.err.appendln(&wgettext_fmt!(BUILTIN_ERR_COMBO, cmd));
             builtin_print_error_trailer(parser, streams.err, cmd);
             return Err(STATUS_INVALID_ARGS);
@@ -286,6 +298,7 @@ impl Options {
                 || opts.erase
                 || opts.list
                 || opts.exportv
+                || opts.have_default_vars
                 || opts.universal)
         {
             streams.err.appendln(&wgettext_fmt!(BUILTIN_ERR_COMBO, cmd));
@@ -299,6 +312,14 @@ impl Options {
                 .appendln(&wgettext_fmt!(BUILTIN_ERR_MISSING, cmd, L!("--erase")));
             builtin_print_error_trailer(parser, streams.err, cmd);
             return Err(STATUS_INVALID_ARGS);
+        }
+
+        for arg in &opts.default_vars {
+            if !valid_var_name(&arg) {
+                streams.err.append(&varname_error(cmd, arg));
+                builtin_print_error_trailer(parser, streams.err, cmd);
+                return Err(STATUS_INVALID_ARGS);
+            }
         }
 
         Ok(())
@@ -870,7 +891,7 @@ fn new_var_values(
     vars: &dyn Environment,
 ) -> Vec<WString> {
     let mut result = vec![];
-    if !opts.prepend && !opts.append {
+    if !opts.prepend && !opts.append && !opts.have_default_vars {
         // Not prepending or appending.
         result.extend(argv.iter().copied().map(|s| s.to_owned()));
     } else {
@@ -881,8 +902,22 @@ fn new_var_values(
         // This starts with the existing global variable, appends to it, and sets it locally.
         // So do not use the given variable: we must re-fetch it.
         // TODO: this races under concurrent execution.
-        if let Some(existing) = vars.get(varname) {
-            existing.as_list().clone_into(&mut result);
+        let mut have_var = false;
+        for var in &opts.default_vars {
+            if let Some(existing) = vars.get(&var) {
+                existing.as_list().clone_into(&mut result);
+                have_var = true;
+                break;
+            }
+        }
+
+        if !have_var {
+            if let Some(existing) = vars.get(varname) {
+                existing.as_list().clone_into(&mut result);
+            } else if !opts.prepend && !opts.append {
+                result.extend(argv.iter().copied().map(|s| s.to_owned()));
+                return result;
+            }
         }
 
         if opts.prepend {

@@ -81,6 +81,12 @@ Further options:
     This can be used with **--append** to both append and prepend at the same time.
     This cannot be used when assigning to a variable slice.
 
+**--default[=NAME]**
+    Picks the value of the variable **NAME** instead of the given *VALUES* if it exists.
+    Without **NAME**, uses the name of the new variable.
+    Either way, the result is a variable of the given scope that either has the values of the preexisting variable or the newly given *VALUES*.
+    With **--append** or **--prepend** it prepends the *VALUES* to the preexisting values.
+
 **-e** or **--erase** *NAME*\[*INDEX*\]
     Causes the specified shell variables to be erased.
     Supports erasing from multiple scopes at once.
@@ -216,6 +222,14 @@ This runs fish with a temporary home directory::
 (which is essentially the same as)::
 
     > begin; set -lx HOME (mktemp -d); fish; end
+
+For customization or defaulting to some value, ``--default`` is useful::
+
+  # Use the xdg config dir - which is either whatever is set in $XDG_CONFIG_HOME, or ~/.config if it is unset.
+  set --default=XDG_CONFIG_HOME --local confhome ~/.config
+
+  # Set $PATH to /usr/bin if it isn't already set.
+  set --default PATH /usr/bin
 
 Notes
 -----

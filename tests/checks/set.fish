@@ -1019,4 +1019,27 @@ set line[0] ""
 echo Still here
 # CHECK: Still here
 
+# set --default
+set -g someglobal global_1 global_2
+set --default=someglobal --local somelocal foo bar baz
+set -S somelocal
+# CHECK: $somelocal: set in local scope, unexported, with 2 elements
+# CHECK: $somelocal[1]: |global_1|
+# CHECK: $somelocal[2]: |global_2|
+
+set --default someglobal foo bar baz
+set -S someglobal
+# CHECK: $someglobal: set in global scope, unexported, with 2 elements
+# CHECK: $someglobal[1]: |global_1|
+# CHECK: $someglobal[2]: |global_2|
+
+set --default=someglobal --append --local newlocal local1 local2 local3
+set --show newlocal
+# CHECK: $newlocal: set in local scope, unexported, with 5 elements
+# CHECK: $newlocal[1]: |global_1|
+# CHECK: $newlocal[2]: |global_2|
+# CHECK: $newlocal[3]: |local1|
+# CHECK: $newlocal[4]: |local2|
+# CHECK: $newlocal[5]: |local3|
+
 exit 0
