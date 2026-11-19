@@ -18,8 +18,7 @@ RUN apk add --no-cache \
     py3-pip \
     python3 \
     rust \
-    sudo \
-    tmux
+    sudo
 
 RUN addgroup -g 1000 fishuser
 
